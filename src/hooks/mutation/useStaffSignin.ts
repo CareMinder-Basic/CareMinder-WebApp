@@ -5,28 +5,33 @@ import Cookies from "js-cookie";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@libraries/recoil";
 import { useNavigate } from "react-router-dom";
+import modalState from "@libraries/recoil/modal";
 
-const signin = async (useInfo: SigninFormData) => {
-  const res = await axiosInstance.post("/wards/login", useInfo);
+const staffSignin = async (useInfo: SigninFormData) => {
+  const res = await axiosInstance.post("/staffs/login", useInfo);
+
   if (res.data.accessToken) {
-    Cookies.set("accessToken", res.data.accessToken);
+    Cookies.set("accessTokenStaff", res.data.accessToken);
   }
+
   return res.data;
 };
 
-export default function useSignin() {
+export default function useStaffSignin() {
   const navigate = useNavigate();
   const setUserState = useSetRecoilState(userState);
+  const setIsModal = useSetRecoilState(modalState);
 
   return useMutation({
-    mutationFn: signin,
+    mutationFn: staffSignin,
     onSuccess: res => {
       console.log("로그인 성공");
+
       //개발 전
       setUserState({
         id: 0,
         name: "테스트",
-        type: "main",
+        type: "staff",
       });
       // 추가 응답 API 개발 완료 후
       // setUserState({
@@ -34,7 +39,9 @@ export default function useSignin() {
       //   name: res.name,
       //   type: res.type,
       // });
-      navigate("/");
+      setIsModal(false);
+
+      navigate("/staff");
     },
     onError: error => {
       console.error("로그인 실패:", error);
