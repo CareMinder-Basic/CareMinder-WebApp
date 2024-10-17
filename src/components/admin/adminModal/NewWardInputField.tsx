@@ -1,11 +1,10 @@
-import { AdminUserField, NewAdminUser } from "@models/user";
+import { NewWard, NewWardField } from "@models/ward";
 import { FormControl, FormHelperText, InputLabel, TextField } from "@mui/material";
-// import { validateBusinessNumber } from "@utils/signin";
 import { Controller, UseFormReturn } from "react-hook-form";
 
-type InputFieldProps = { form: UseFormReturn<NewAdminUser>; field: AdminUserField };
+type InputFieldProps = { form: UseFormReturn<NewWard>; field: NewWardField };
 
-export default function InputField({ field, form }: InputFieldProps) {
+export default function NewWardInputField({ field, form }: InputFieldProps) {
   const { name, label, placeholder } = field;
 
   const {
@@ -40,29 +39,23 @@ export default function InputField({ field, form }: InputFieldProps) {
 /** utils */
 
 const validationRules = {
-  name: { required: "이름을 입력해주세요." },
-  hospitalName: { required: "병원명을 입력해주세요." },
-  hospitalAddress: { required: "병원 주소를 입력해주세요." },
-  registrationNumber: {
-    required: "사업자등록번호를 입력해주세요.",
-    // validate: (value: string) =>
-    //   validateBusinessNumber(value) || "올바른 사업자등록번호를 입력해주세요.",
-  },
-  username: { required: "아이디를 입력해주세요." },
+  wardName: { required: "병동명을 입력해주세요." },
+  loginId: { required: "아이디를 입력해주세요." },
   password: {
     required: "비밀번호를 입력해주세요.",
     minLength: { value: 8, message: "비밀번호는 최소 8자 이상이어야 합니다." },
   },
   confirmPassword: {
     required: "비밀번호를 재입력해주세요.",
-    validate: (value: string, { password }: NewAdminUser) =>
+    validate: (value: string, { password }: NewWard) =>
       value === password || "비밀번호가 일치하지 않습니다.",
   },
-  phoneNumber: {
+  managerName: { required: "담당자 이름을 입력해주세요." },
+  managerPhoneNumber: {
     required: "전화번호를 입력해주세요.",
     pattern: { value: /^\d{3}-\d{4}-\d{4}$/, message: "올바른 전화번호 형식을 입력해주세요." },
   },
-  email: {
+  managerEmail: {
     required: "이메일을 입력해주세요.",
     pattern: {
       value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
@@ -71,14 +64,12 @@ const validationRules = {
   },
 };
 
-const inputTypes: { [key in keyof NewAdminUser]: string } = {
-  name: "text",
-  hospitalName: "text",
-  hospitalAddress: "text",
-  registrationNumber: "text",
-  username: "text",
+const inputTypes: { [key in keyof NewWard]: string } = {
+  wardName: "text",
+  managerName: "text",
+  loginId: "text",
   password: "password",
   confirmPassword: "password",
-  phoneNumber: "tel",
-  email: "email",
+  managerPhoneNumber: "tel",
+  managerEmail: "email",
 };
