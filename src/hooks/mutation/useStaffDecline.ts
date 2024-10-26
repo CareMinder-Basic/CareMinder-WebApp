@@ -2,7 +2,7 @@ import { StaffPatientRequest } from "@libraries/axios";
 import { VoidFn } from "@models/staff";
 import { useMutation } from "@tanstack/react-query";
 
-const useStaffAccept = (
+const useStaffDecline = (
   pendingRefetch: VoidFn,
   inprogressRefetch: VoidFn,
   inprogressGroupRefetch: VoidFn,
@@ -10,13 +10,12 @@ const useStaffAccept = (
 ) => {
   return useMutation({
     mutationFn: (id: number) => {
-      return StaffPatientRequest.postAccept(id);
+      return StaffPatientRequest.patchDecline(id);
     },
     onSuccess: () => {
-      pendingRefetch();
       staffAcceptIsGroup ? inprogressGroupRefetch() : inprogressRefetch();
     },
   });
 };
 
-export default useStaffAccept;
+export default useStaffDecline;
