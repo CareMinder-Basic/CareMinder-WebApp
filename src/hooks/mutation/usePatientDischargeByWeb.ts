@@ -1,13 +1,14 @@
-import { StaffPatientRequest } from "@libraries/axios";
 import { RefetchProps } from "@models/staff";
 import { useMutation } from "@tanstack/react-query";
+import axiosInstance from "@utils/axios/axiosInstance";
 
-const useStaffDecline = (refetchProps: RefetchProps) => {
+const usePatientDischargeByWeb = (refetchProps: RefetchProps) => {
   const { pendingRefetch, inprogressRefetch, inprogressGroupRefetch, staffAcceptIsGroup } =
     refetchProps;
+
   return useMutation({
-    mutationFn: (id: number) => {
-      return StaffPatientRequest.patchDecline(id);
+    mutationFn: (tabletId: number) => {
+      return axiosInstance.post("/patients/discharge-by-web?tabletId=" + tabletId);
     },
     onSuccess: () => {
       pendingRefetch();
@@ -16,4 +17,4 @@ const useStaffDecline = (refetchProps: RefetchProps) => {
   });
 };
 
-export default useStaffDecline;
+export default usePatientDischargeByWeb;
