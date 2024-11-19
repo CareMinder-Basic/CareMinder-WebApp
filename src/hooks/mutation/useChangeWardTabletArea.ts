@@ -1,23 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@utils/axios/axiosInstance";
 
-export type NewStaffArea = {
+export type NewTabletfArea = {
   userIds: number[];
   areaId: number;
 };
 
-const changeStaffArea = async (newStaffArea: NewStaffArea) => {
-  const res = await axiosInstance.post("/staffs/change-area", newStaffArea);
+const changeTabletArea = async (newTabletArea: NewTabletfArea) => {
+  const res = await axiosInstance.post("/wards/change-tablet-area", newTabletArea);
   return res.data;
 };
 
-export default function useChangeStaffArea() {
+export default function useChangeTabletArea() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: changeStaffArea,
+    mutationFn: changeTabletArea,
     onSuccess: () => {
       console.log("구역 변경 완료");
-      queryClient.invalidateQueries({ queryKey: ["staffList"] });
+      queryClient.invalidateQueries({ queryKey: ["ward-tablet-list"] });
     },
     onError: error => {
       console.error("구역 변경 실패", error);
