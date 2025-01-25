@@ -77,11 +77,17 @@ export default function useSignOut(type: UserType) {
           };
         });
 
-        navigate("/");
+        // 상태 업데이트가 완료된 후 페이지 이동
+        setTimeout(() => {
+          navigate("/");
+          window.location.reload(); // 페이지 새로고침으로 preload 스크립트 재실행
+        }, 0);
       } else {
         setUserState(null);
-        logoutServiceWorker();
-        navigate("/sign-in");
+        setTimeout(() => {
+          navigate("/sign-in");
+          window.location.reload();
+        }, 0);
       }
       setAutoCompleteId("");
     },

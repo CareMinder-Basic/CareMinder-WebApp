@@ -15,16 +15,27 @@ import { toast } from "react-toastify";
 const StaffNoticeWritePage = () => {
   //@ts-ignore
   const [searchValue, setSearchValue] = useState<string>("");
-  const token = Cookies.get("accessTokenStaff") as string;
+  // const token = Cookies.get("accessTokenStaff") as string;
+  //@ts-ignore
+  // const token = await window.electronStore.get("accessTokenStaff");
+  const [staffToken, setStaffToken] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isMyArea, setIsMyArea] = useState<boolean>(false);
   const [fileUrl, setFileUrl] = useState<Array<{ name: string; url: string }>>([]);
   //@ts-ignore
   const { data: getTablet, isLoading } = useGetWardTabletRequests({
-    token: token,
+    token: staffToken as string,
     patientName: searchValue,
     myArea: isMyArea,
   });
+  useEffect(() => {
+    const getToken = async () => {
+      //@ts-ignore
+      const token = await window.electronStore.get("accessTokenStaff");
+      setStaffToken(token);
+    };
+    getToken();
+  }, []);
 
   //@ts-ignore
   const { mutate, isPending } = useCreateNotice();

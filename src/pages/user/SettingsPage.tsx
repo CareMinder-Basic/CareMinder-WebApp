@@ -85,7 +85,10 @@ export default function SettingsPage() {
 
 const Container = styled(Stack)({
   height: "100%",
-  padding: "31.6px 0",
+  padding: "31.6px 30px",
+  backgroundColor: "rgb(255, 255, 255)",
+  borderRadius: 24,
+  width: "100%",
 });
 
 const HeadContainer = styled(Stack)({

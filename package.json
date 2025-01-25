@@ -86,23 +86,37 @@
     "wait-on": "^7.2.0"
   },
   "build": {
+    "appId": "com.careflow.careminder",
     "productName": "CareMinder",
-    "appId": "com.CareMinder.electron",
-    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "src/**/*",
+      "electron/**/*",
+      "preload.js",
+      "electron.js"
+    ],
     "mac": {
       "target": [
         "dmg"
       ],
-      "icon": "build/icons/CareFlow-icon.png"
-    },
-    "dmg": {
-      "title": "CareMinder",
-      "icon": "build/icons/CareFlow-icon.png"
+      "category": "public.app-category.healthcare"
     },
     "win": {
       "target": [
         "nsis"
-      ],
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    },
+    "asar": true,
+    "dmg": {
+      "title": "CareMinder",
       "icon": "build/icons/CareFlow-icon.png"
     },
     "nsis": {
@@ -115,11 +129,6 @@
       "shortcutName": "CareMinder",
       "artifactName": "CareMinder-${version}.${ext}",
       "uninstallDisplayName": "CareMinder"
-    },
-    "directories": {
-      "buildResources": "./build/",
-      "output": "./dist/"
     }
-  },
-  "packageManager": "yarn@4.2.2+sha512.c44e283c54e02de9d1da8687025b030078c1b9648d2895a65aab8e64225bfb7becba87e1809fc0b4b6778bbd47a1e2ab6ac647de4c5e383a53a7c17db6c3ff4b"
+  }
 }

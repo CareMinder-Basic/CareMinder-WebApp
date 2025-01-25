@@ -415,7 +415,7 @@ export default StaffAccountSettingsTable;
 
 const TableContainer = styled.div`
   width: 100%;
-  overflow-x: auto;
+  overflow-x: scroll;
 `;
 
 const StTable = styled.table`

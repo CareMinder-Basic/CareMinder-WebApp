@@ -17,10 +17,8 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
   const { pathname } = useLocation();
   const user = useRecoilValue(userState);
   const [isChecking, setIsChecking] = useState(true);
-  // const accessTokenWard = Cookies.get("accessTokenWard");
   const [accessTokenWard, setAccessTokenWard] = useState<string | null>(null);
   const [accessTokenStaff, setAccessTokenStaff] = useState<string | null>(null);
-  // const accessTokenStaff = Cookies.get("accessTokenStaff");
   const accessTokenAdmin = Cookies.get("accessTokenAdmin");
   const setUser = useSetRecoilState(userState);
   const setIsModalOpen = useSetRecoilState(modalState);
@@ -30,98 +28,118 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
   //   navigate(-1);
   // }, []);
 
-  useEffect(() => {
-    const getTokens = async () => {
-      //@ts-ignore
+  // 토큰 체크 로직을 별도 함수로 분리
+  const checkAndSetTokens = async () => {
+    try {
       const token = await window.tokenAPI.getTokens();
-      //@ts-ignore
       const staffToken = await window.electronStore.get("accessTokenStaff");
-      if (token) {
-        setAccessTokenWard(token.accessToken);
-        setAccessTokenStaff(staffToken);
-      }
-    };
-    getTokens();
+
+      setAccessTokenWard(token?.accessToken);
+      setAccessTokenStaff(staffToken);
+      return { wardToken: token?.accessToken, staffToken };
+    } catch (error) {
+      console.error("Token fetch error:", error);
+      return { wardToken: null, staffToken: null };
+    }
+  };
+
+  // 초기 토큰 체크
+  useEffect(() => {
+    checkAndSetTokens();
   }, []);
 
+  // user 타입 설정
   useEffect(() => {
-    //스태프 페이지
-    if (pathname.includes("staff") && !accessTokenStaff) {
-      if (user?.type === "STAFF") {
+    if (!user) return;
+
+    const updateUserType = async () => {
+      const { wardToken, staffToken } = await checkAndSetTokens();
+
+      if (staffToken && user.type !== "STAFF") {
+        setUser(prev => ({
+          ...prev,
+          type: "STAFF",
+        }));
+      } else if (wardToken && !staffToken && user.type !== "WARD") {
+        setUser(prev => ({
+          ...prev,
+          type: "WARD",
+        }));
+      }
+    };
+
+    updateUserType();
+  }, [user, setUser]);
+
+  // 라우팅 및 권한 체크
+  useEffect(() => {
+    if (!user || !allowedRoles) return;
+
+    const hasValidToken =
+      (user.type === "WARD" && accessTokenWard) ||
+      (user.type === "STAFF" && accessTokenStaff) ||
+      (user.type === "ADMIN" && accessTokenAdmin);
+
+    // WARD 토큰으로 staff 경로 진입 시 체크
+    if (pathname.includes("staff") && accessTokenWard && !accessTokenStaff) {
+      setIsChecking(true); // 로딩 상태 활성화
+      setIsModalOpen(true);
+      return;
+    }
+
+    // 권한 체크
+    if (allowedRoles.includes(user.type) && hasValidToken) {
+      setIsChecking(false);
+      setIsModalOpen(false);
+    }
+
+    // 초기 경로 설정
+    if (pathname === "/") {
+      switch (user.type) {
+        case "STAFF":
+          navigate("/staff");
+          break;
+        case "ADMIN":
+          navigate("/admin");
+          break;
+        default:
+          navigate("/");
+      }
+    }
+
+    // staff 페이지 접근 제어
+    if (pathname.includes("staff")) {
+      if (!accessTokenStaff && user.type === "STAFF") {
         navigate("/");
         setIsModalOpen(false);
-        setUser(prev => {
-          if (!prev) {
-            return { id: 0, name: "", type: "WARD" };
-          }
-
-          return {
-            ...prev,
-            type: "WARD",
-            id: prev.id,
-            name: prev.name,
-          };
-        });
-      } else {
-        setIsModalOpen(true);
-        setIsChecking(true);
-      }
-    }
-
-    if (user) {
-      //병동 권한 충족
-      if (pathname === "/") {
-        switch (user.type) {
-          case "WARD":
-            navigate("/");
-            break;
-          case "STAFF":
-            navigate("/staff");
-            break;
-          case "ADMIN":
-            navigate("/admin");
-            break;
-          default:
-            navigate("/");
-        }
-      }
-      const isCheckPermission = async () => {
-        //@ts-ignore
-        const token = await window.tokenAPI.getTokens();
-        console.log("접근");
-        console.log(token);
-        console.log(user);
-        if (
-          (allowedRoles.includes(user.type) && token.accessToken) ||
-          (allowedRoles.includes(user.type) && accessTokenStaff) ||
-          (allowedRoles.includes(user.type) && accessTokenAdmin)
-        ) {
-          setIsChecking(false);
-          setIsModalOpen(false);
-        }
-      };
-      isCheckPermission();
-
-      if (
-        (allowedRoles.includes(user.type) && accessTokenWard) ||
-        (allowedRoles.includes(user.type) && accessTokenStaff) ||
-        (allowedRoles.includes(user.type) && accessTokenAdmin)
-      ) {
-        setIsChecking(false);
-        setIsModalOpen(false);
-      }
-      //스태프 페이지 접근
-      console.log("accessTokenStaff", accessTokenStaff);
-      console.log("accessTokenWard", accessTokenWard);
-      if (pathname.includes("staff") && accessTokenWard) {
+      } else if (accessTokenWard && user.type === "WARD") {
         setIsModalOpen(true);
       }
     }
-  }, [user, allowedRoles, pathname, accessTokenStaff, accessTokenWard, navigate]);
+  }, [
+    pathname,
+    user,
+    accessTokenStaff,
+    accessTokenWard,
+    accessTokenAdmin,
+    allowedRoles,
+    navigate,
+    setIsModalOpen,
+  ]);
 
   if (isChecking) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" padding="30px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        width="100vw"
+        height="100vh"
+        position="fixed"
+        top={0}
+        left={0}
+        bgcolor="#fff"
+      >
         <CircularProgress />
       </Box>
     );

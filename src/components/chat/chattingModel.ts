@@ -55,14 +55,17 @@ export const DisConnect = (
   }
 };
 
-export const SendChat = (
+export const SendChat = async (
   chat: string,
   setChat: React.Dispatch<React.SetStateAction<string>>,
   roomId: number,
   setRoomId: React.Dispatch<React.SetStateAction<number | null>>,
 ) => {
   if (chat === "") return;
-  const token = Cookies.get("accessTokenStaff");
+  // const token = Cookies.get("accessTokenStaff");
+
+  //@ts-ignore
+  const token = await window.electronStore.get("accessTokenStaff");
 
   try {
     Clients.publish({

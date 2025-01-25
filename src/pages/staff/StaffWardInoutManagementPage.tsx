@@ -1,4 +1,6 @@
-import { Box, Button, Stack, Typography, styled } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import { styled as muiStyled } from "@mui/material/styles";
+import styled from "@emotion/styled";
 import { AdminTable } from "@components/admin";
 import CButton from "@components/common/atom/C-Button";
 import CSearchBox from "@components/common/atom/C-SearchBox";
@@ -33,9 +35,26 @@ type SelectedItem = {
   areaName: string;
 };
 
+const PageContainer = muiStyled("div")({
+  height: "100vh",
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+});
+
+const ContentContainer = muiStyled("div")({
+  flex: 1,
+  overflow: "hidden",
+  padding: "20px",
+});
+
 const StaffWardInoutManagementPage = () => {
   const [searchValue, setSearchValue] = useState<string>("");
-  const token = Cookies.get("accessTokenStaff") as string;
+  // const token = Cookies.get("accessTokenStaff") as string;
+
+  const [staffToken, setStaffToken] = useState<string | null>(null);
+  //@ts-ignore
+  // const token = await window.electronStore.get("accessTokenStaff");
   //@ts-ignore
   const [isMyArea, setIsMyArea] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
@@ -50,13 +69,21 @@ const StaffWardInoutManagementPage = () => {
   const handleChangePage = useCallback((_: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page - 1);
   }, []);
+  useEffect(() => {
+    const getToken = async () => {
+      //@ts-ignore
+      const token = await window.electronStore.get("accessTokenStaff");
+      setStaffToken(token);
+    };
+    getToken();
+  }, []);
 
   const {
     data: getTablet,
     refetch,
     isLoading,
   } = useGetWardTabletRequests({
-    token: token,
+    token: staffToken as string,
     patientName: debounceValue,
     myArea: isMyArea,
     page: currentPage,
@@ -272,122 +299,126 @@ const StaffWardInoutManagementPage = () => {
         />
       )}
       {isSuccessModal}
-      <Container>
-        <Title variant="h1">환자 관리</Title>
-        <AnimatePresence mode="wait">
-          {selected?.length > 0 ? (
-            <motion.div
-              key="selected"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <SelectedActionBox>
-                <div style={{ display: "flex", alignItems: "center", paddingLeft: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                    <Button onClick={() => setSelected([])}>
-                      <StaffCancelIcon />
-                    </Button>
-                    <Text>{selected?.length}항목 선택됨</Text>
-                  </div>
-                  <div style={{ display: "flex", marginLeft: 60, gap: 24 }}>
-                    <ComBoxLayout width={"192px"}>
-                      <CComboBox
-                        placeholder={"구역"}
-                        options={area}
-                        isStaff={false}
-                        value={mostFrequentAreaName as string}
-                        onChange={e => handleChangeArea(e)}
+      <PageContainer>
+        <ContentContainer>
+          <Container>
+            <Title variant="h1">환자 관리</Title>
+            <AnimatePresence mode="wait">
+              {selected?.length > 0 ? (
+                <motion.div
+                  key="selected"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <SelectedActionBox>
+                    <div style={{ display: "flex", alignItems: "center", paddingLeft: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                        <Button onClick={() => setSelected([])}>
+                          <StaffCancelIcon />
+                        </Button>
+                        <Text>{selected?.length}항목 선택됨</Text>
+                      </div>
+                      <div style={{ display: "flex", marginLeft: 60, gap: 24 }}>
+                        <ComBoxLayout width={"192px"}>
+                          <CComboBox
+                            placeholder={"구역"}
+                            options={area}
+                            isStaff={false}
+                            value={mostFrequentAreaName as string}
+                            onChange={e => handleChangeArea(e)}
+                          />
+                        </ComBoxLayout>
+                        {/* <ComBoxLayout width={"160px"}>
+                          <CalendarSelect onClick={handleActive}>
+                            {disChargeDate !== new Date() ? (
+                              <Text
+                                sx={{
+                                  fontSize: 14,
+                                  lineHeight: 20,
+                                  fontWeight: 400,
+                                  letterSpacing: "-3%",
+                                  opacity: 1,
+                                }}
+                              >
+                                {formatDateYYYYMMDD(disChargeDate as Date)}
+                              </Text>
+                            ) : (
+                              <Text
+                                sx={{
+                                  fontSize: 14,
+                                  lineHeight: 20,
+                                  fontWeight: 400,
+                                  letterSpacing: "-3%",
+                                  opacity: 0.3,
+                                }}
+                              >
+                                예상 퇴원 날짜
+                              </Text>
+                            )}
+                            <CalendarIcon />
+                            {isAcitve && (
+                              <CCalendar value={disChargeDate} setState={setDisChargeDate} />
+                            )}
+                          </CalendarSelect>
+                        </ComBoxLayout> */}
+                        <CButton buttontype={"impactRed"} onClick={handleModal}>
+                          환자 퇴원 처리
+                        </CButton>
+                      </div>
+                    </div>
+                  </SelectedActionBox>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="nan-selected"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.1 }}
+                >
+                  <NanSelectedActionBox>
+                    <SearchLayout>
+                      <CSearchBox
+                        value={searchValue}
+                        onChange={onChangeSearchValue}
+                        placeholder={"검색할 내용을 입력해 주세요."}
+                        borderColor={"#ECECEC"}
                       />
-                    </ComBoxLayout>
-                    {/* <ComBoxLayout width={"160px"}>
-                      <CalendarSelect onClick={handleActive}>
-                        {disChargeDate !== new Date() ? (
-                          <Text
-                            sx={{
-                              fontSize: 14,
-                              lineHeight: 20,
-                              fontWeight: 400,
-                              letterSpacing: "-3%",
-                              opacity: 1,
-                            }}
-                          >
-                            {formatDateYYYYMMDD(disChargeDate as Date)}
-                          </Text>
-                        ) : (
-                          <Text
-                            sx={{
-                              fontSize: 14,
-                              lineHeight: 20,
-                              fontWeight: 400,
-                              letterSpacing: "-3%",
-                              opacity: 0.3,
-                            }}
-                          >
-                            예상 퇴원 날짜
-                          </Text>
-                        )}
-                        <CalendarIcon />
-                        {isAcitve && (
-                          <CCalendar value={disChargeDate} setState={setDisChargeDate} />
-                        )}
-                      </CalendarSelect>
-                    </ComBoxLayout> */}
-                    <CButton buttontype={"impactRed"} onClick={handleModal}>
-                      환자 퇴원 처리
-                    </CButton>
-                  </div>
-                </div>
-              </SelectedActionBox>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="nan-selected"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1 }}
-            >
-              <NanSelectedActionBox>
-                <SearchLayout>
-                  <CSearchBox
-                    value={searchValue}
-                    onChange={onChangeSearchValue}
-                    placeholder={"검색할 내용을 입력해 주세요."}
-                    borderColor={"#ECECEC"}
-                  />
-                </SearchLayout>
-              </NanSelectedActionBox>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    </SearchLayout>
+                  </NanSelectedActionBox>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        <TableLayout>
-          {!isLoading && (
-            <AdminTable
-              isLoading={isLoading}
-              getTablet={getTablet?.data}
-              onChangeSelected={onChangeSelected}
-              onChangeSelectAll={onChangeSelectAll}
-              onDisCharge={handleDischargeSingle}
-              selected={selected}
-              areaList={areaList}
-              area={area}
-              handleMemoModal={handleMemoModal}
-            />
-          )}
-        </TableLayout>
-        <FooterLayout>
-          <div>
-            <PaginationComponent
-              customColor={"#30B4FF"}
-              totalPage={getTablet?.totalPages}
-              onChange={(e, page) => handleChangePage(e, page)}
-            />
-          </div>
-        </FooterLayout>
-      </Container>
+            <TableLayout>
+              {!isLoading && (
+                <AdminTable
+                  isLoading={isLoading}
+                  getTablet={getTablet?.data}
+                  onChangeSelected={onChangeSelected}
+                  onChangeSelectAll={onChangeSelectAll}
+                  onDisCharge={handleDischargeSingle}
+                  selected={selected}
+                  areaList={areaList}
+                  area={area}
+                  handleMemoModal={handleMemoModal}
+                />
+              )}
+            </TableLayout>
+            <FooterLayout>
+              <div>
+                <PaginationComponent
+                  customColor={"#30B4FF"}
+                  totalPage={getTablet?.totalPages}
+                  onChange={(e, page) => handleChangePage(e, page)}
+                />
+              </div>
+            </FooterLayout>
+          </Container>
+        </ContentContainer>
+      </PageContainer>
     </>
   );
 };
@@ -398,6 +429,9 @@ export default StaffWardInoutManagementPage;
 
 const Container = styled(Stack)({
   height: "100%",
+  backgroundColor: "rgb(255, 255, 255)",
+  padding: 30,
+  borderRadius: 24,
 });
 
 const TableLayout = styled(Box)({

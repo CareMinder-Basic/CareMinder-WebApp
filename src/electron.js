@@ -27,8 +27,8 @@ const store = new Store();
 
 function createSplashWindow() {
   const splashWindow = new BrowserWindow({
-    width: 400,
-    height: 300,
+    width: 250,
+    height: 250,
     frame: false, // 기본 윈도우 프레임 숨기기
     transparent: true, // 배경 투명화 (스플래시 화면에 적합)
     alwaysOnTop: true, // 항상 위에 표시
@@ -126,6 +126,20 @@ function displayNotification(notification) {
   }, 5500);
 }
 
+// 앱 종료 시 staff 토큰 삭제 함수
+async function clearStaffTokens() {
+  try {
+    if (store) {
+      // store 객체가 존재하는지 확인
+      await store.delete("accessTokenStaff");
+      await store.delete("refreshTokenStaff");
+      console.log("Staff tokens cleared on app exit");
+    }
+  } catch (error) {
+    console.error("Error clearing staff tokens:", error);
+  }
+}
+
 app.whenReady().then(async () => {
   createWindow();
   ipcMain.handle("get-fcm", (event, key) => {
@@ -156,10 +170,26 @@ app.whenReady().then(async () => {
   });
 });
 
+// window-all-closed 이벤트 핸들러 수정
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  clearStaffTokens().then(() => {
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
+});
+
+// before-quit 이벤트 수정
+app.on("before-quit", event => {
+  event.preventDefault();
+  clearStaffTokens()
+    .then(() => {
+      app.exit(0); // 정상 종료 코드 추가
+    })
+    .catch(error => {
+      console.error("Error during app quit:", error);
+      app.exit(1); // 에러 종료 코드
+    });
 });
 
 app.on("activate", () => {
