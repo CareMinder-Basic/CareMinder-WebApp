@@ -12,7 +12,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "electron-dev": "vite build && electron .",
-    "electron-pack": "NODE_ENV=production electron-builder"
+    "electron-pack": "vite build && electron-builder"
   },
   "dependencies": {
     "@emotion/react": "11.13.3",
@@ -117,7 +117,7 @@
     "asar": true,
     "dmg": {
       "title": "CareMinder",
-      "icon": "build/icons/CareFlow-icon.png"
+      "icon": "build/icons.icns"
     },
     "nsis": {
       "oneClick": false,
@@ -125,7 +125,7 @@
       "createDesktopShortcut": true,
       "perMachine": true,
       "language": 1042,
-      "installerIcon": "build/icons/CareFlow-icon.png",
+      "installerIcon": "build/ico/icon_256.ico",
       "shortcutName": "CareMinder",
       "artifactName": "CareMinder-${version}.${ext}",
       "uninstallDisplayName": "CareMinder"
