@@ -38,9 +38,6 @@ export default function ChangeModal({
   const { handleSubmit } = form;
 
   const onSubmit: SubmitHandler<NewPassword> = data => {
-    console.log(data);
-    console.log(userStatus?.id);
-
     const newPasswordRequest = {
       userIds: [userStatus?.id as number],
       newPassword: data.confirmPassword,

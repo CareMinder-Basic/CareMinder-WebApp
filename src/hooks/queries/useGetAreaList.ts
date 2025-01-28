@@ -19,8 +19,10 @@ export const getAreaList = async ({ type }: getAreaListRequest) => {
     const res = await axiosInstance.get("/areas");
     return res.data;
   } else if (type === "STAFF") {
+    //@ts-ignore
+    const token = await window.electronStore.get("accessTokenWard");
     const res = await axiosInstance.get("/areas", {
-      headers: { Authorization: `Bearer ${Cookies.get("accessTokenWard")}` },
+      headers: { Authorization: `Bearer ${token}` },
       customHeader: true,
     } as CustomAxiosRequestConfig);
     return res.data;

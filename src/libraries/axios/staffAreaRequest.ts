@@ -10,9 +10,12 @@ const PATH = "/areas";
 
 const StaffAreaRequest: AreaRequestApiType = {
   //모든 환자 요청 조회
+
   getStaffAreaRequests({ token }) {
+    //@ts-ignore
+    const wardToken = await window.electronStore.get("accessTokenWard");
     return axiosInstance.get(PATH, {
-      headers: { Authorization: `Bearer ${Cookies.get("accessTokenWard")}` },
+      headers: { Authorization: `Bearer ${wardToken}` },
       customHeader: true,
       params: {
         token,

@@ -26,7 +26,6 @@ export default function UserHeader() {
       const key = "get-fcm";
       //@ts-ignore
       const token = await window.Fcm.getFcmData(key);
-      console.log(`Retrieved data: ${key} = ${token}`);
 
       if (token) {
         const res = await axiosInstance.post(

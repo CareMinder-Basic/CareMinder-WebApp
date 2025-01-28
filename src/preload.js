@@ -13,7 +13,17 @@ contextBridge.exposeInMainWorld("electronStore", {
 });
 
 contextBridge.exposeInMainWorld("Fcm", {
-  getFcmData: key => ipcRenderer.invoke(key),
+  // getFcmData: key => ipcRenderer.invoke(key),
+  getFcmData: async key => {
+    try {
+      const result = await ipcRenderer.invoke("get-fcm", key);
+      console.log("접근");
+      return result;
+    } catch (error) {
+      console.error("Error in getFcmData:", error);
+      throw error;
+    }
+  },
 });
 
 contextBridge.exposeInMainWorld("tokenAPI", {

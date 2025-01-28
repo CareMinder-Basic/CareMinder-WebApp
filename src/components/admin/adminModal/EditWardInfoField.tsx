@@ -69,6 +69,7 @@ export default function EditWardInfoField({ field, form, wardData }: InputFieldP
     } else {
       try {
         setWardNameDoubleCheck(true);
+
         const res = await axios.get(`${SEVER_URL}/wards/check-ward-name`, {
           headers: {
             Authorization: `Bearer ${Cookies.get("accessTokenAdmin")}`,

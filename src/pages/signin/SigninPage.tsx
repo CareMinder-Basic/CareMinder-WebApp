@@ -10,6 +10,8 @@ import { useRecoilValue } from "recoil";
 export default function SigninPage() {
   const user = useRecoilValue(userState);
   const accessToken = Cookies.get("accessTokenWard");
+  //@ts-ignore
+  // const token = await window.electronStore.get("accessTokenWard");
   const navigate = useNavigate();
   const [isCheck, setIsCheck] = useState(true);
 

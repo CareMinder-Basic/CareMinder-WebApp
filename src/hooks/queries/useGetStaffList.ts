@@ -37,9 +37,11 @@ export type GetStaffListProps = {
 };
 
 export const getStaffList = async ({ page, size }: GetStaffListProps) => {
+  //@ts-ignore
+  const token = await window.electronStore.get("accessTokenWard");
   const res = await axiosInstance.get("/wards/staff-list", {
     headers: {
-      Authorization: `Bearer ${Cookies.get("accessTokenWard")}`,
+      Authorization: `Bearer ${token}`,
     },
     params: {
       page: page,

@@ -9,6 +9,7 @@ import { UserType } from "@models/user";
 import { SEVER_URL } from "@constants/baseUrl";
 import reqChangePWState from "@libraries/recoil/reqChangePW";
 import { handleAllowNotification } from "@components/fcm/notificationPermission";
+import axiosInstance from "@utils/axios/axiosInstance";
 
 const signin = async (useInfo: SigninFormData) => {
   const res = await axios.post(`${SEVER_URL}/users/login`, useInfo);
@@ -50,7 +51,6 @@ export default function useSignin() {
     onSuccess: async res => {
       queryClient.invalidateQueries({ queryKey: ["useGetWardPatientPending"] });
       console.log("로그인 성공");
-      console.log(res);
       // 추가 응답 API 개발 완료 후
       //@ts-ignore
       await window.electronStore.set("userType", {

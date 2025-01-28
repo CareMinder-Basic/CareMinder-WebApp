@@ -16,8 +16,10 @@ const changeTabletArea = async (newTabletArea: NewTabletfArea) => {
   return res.data;
 };
 const changeTabletAreaStaff = async (newTabletArea: NewTabletfArea) => {
+  //@ts-ignore
+  const token = await window.electronStore.get("accessTokenWard");
   const res = await axiosInstance.post("/wards/change-tablet-area", newTabletArea, {
-    headers: { Authorization: `Bearer ${Cookies.get("accessTokenWard")}` },
+    headers: { Authorization: `Bearer ${token}` },
     customHeader: true,
   } as CustomAxiosRequestConfig);
   return res.data;

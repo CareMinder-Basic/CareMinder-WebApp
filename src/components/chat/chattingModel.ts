@@ -16,11 +16,13 @@ export const LoadChatHistory = async (roomId: number) => {
   }
 };
 
-export const ConnectChat = (
+export const ConnectChat = async (
   roomId: number,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
 ) => {
-  const token = Cookies.get("accessTokenStaff");
+  // const token = Cookies.get("accessTokenStaff");
+  //@ts-ignore
+  const token = await window.electronStore.get("accessTokenStaff");
 
   Clients = new Client({
     brokerURL: SW_SEVER_URL,
@@ -66,6 +68,7 @@ export const SendChat = async (
 
   //@ts-ignore
   const token = await window.electronStore.get("accessTokenStaff");
+  console.log("test", chat, roomId, token);
 
   try {
     Clients.publish({

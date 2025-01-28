@@ -29,9 +29,11 @@ export type GetWardTabletListProps = {
 };
 
 export const getWardTabledList = async ({ myArea = false, page, size }: GetWardTabletListProps) => {
+  //@ts-ignore
+  const token = await window.electronStore.get("accessTokenWard");
   const res = await axiosInstance.get("/wards/tablet-list", {
     headers: {
-      Authorization: `Bearer ${Cookies.get("accessTokenWard")}`,
+      Authorization: `Bearer ${token}`,
     },
     params: {
       myArea: myArea,

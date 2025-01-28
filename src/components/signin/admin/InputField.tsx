@@ -209,7 +209,6 @@ export default function InputField({ field, form }: InputFieldProps) {
       const res = await axios.post(`${SEVER_URL}/sms/send`, {
         phoneNumber: _phoneNumber,
       });
-      console.log(res.data);
       setShowVerifyCode(true);
     } catch (err) {
       console.log(err);

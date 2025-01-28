@@ -6,6 +6,14 @@ import Store from "electron-store";
 import { register, listen } from "push-receiver-v2";
 import path from "path";
 import sound from "sound-play";
+import AutoLaunch from "auto-launch";
+import { autoUpdater } from "electron-updater";
+import log from "electron-log";
+
+const autoLauncher = new AutoLaunch({
+  name: "CareMinder", // 애플리케이션 이름
+  path: app.getPath("exe"), // 애플리케이션 경로
+});
 
 const firebaseConfig = {
   firebase: {
@@ -24,6 +32,29 @@ const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 config({ path: join(__dirname, "../.env") });
 const isDev = process.env.VITE_IS_DEV === "true";
 const store = new Store();
+
+// 자동 실행 활성화 함수
+const enableAutoLaunch = async () => {
+  try {
+    const isEnabled = await autoLauncher.isEnabled();
+    if (!isEnabled) {
+      await autoLauncher.enable(); // 자동 실행 활성화
+      console.log("자동 실행 활성화 완료");
+    }
+  } catch (err) {
+    console.error("자동 실행 활성화 실패:", err);
+  }
+};
+
+// 자동 실행 비활성화 함수
+const disableAutoLaunch = async () => {
+  try {
+    await autoLauncher.disable();
+    console.log("자동 실행 비활성화 완료");
+  } catch (err) {
+    console.error("자동 실행 비활성화 실패:", err);
+  }
+};
 
 function createSplashWindow() {
   const splashWindow = new BrowserWindow({
@@ -52,34 +83,48 @@ async function createWindow() {
       contextIsolation: true,
       enableRemoteModule: false,
       allowRunningInsecureContent: true,
+      webSecurity: false,
       // preload: path.join("file:", __dirname, "preload.mjs"),
       preload: path.resolve(__dirname, "preload.js"),
     },
   });
 
   console.log("HTML File Path:", path.resolve(__dirname, "../dist/index.html"));
+  // 빌드 된 것을 ssh에 올리
 
   const credentials = await register(firebaseConfig);
+  console.log(credentials);
+
   const savedFcmToken = store.get("fcm_token");
   console.log("Retrieved FCM Token:", savedFcmToken);
+
   await listen({ ...credentials }, onNotification);
 
   // win.loadURL("http://localhost:5173");
-  const filePath = path.resolve(__dirname, "../dist/index.html");
-  win.loadFile(filePath);
+  const startUrl = format({
+    pathname: path.resolve(__dirname, "../dist/index.html"),
+    protocol: "file:",
+    slashes: true,
+  });
+
+  /** 시작 포인트 실행 */
+  win.loadURL(startUrl);
+
+  // win.loadFile(filePath);
 
   win.webContents.on("did-finish-load", () => {
     console.log("Main window has finished loading.");
     if (splashWindow && !splashWindow.isDestroyed()) {
-      splashWindow.destroy(); // close() 대신 destroy() 사용
+      splashWindow.destroy();
+      win.show();
     }
-    win.show();
   });
 }
 
 let persistentIds = [];
 
 function onNotification({ notification, persistentId }) {
+  console.log("Notification received:", notification, persistentId);
   const newPersistentId = notification.data.data;
   if (persistentIds.includes(newPersistentId)) {
     return; // 중복 알림
@@ -88,7 +133,6 @@ function onNotification({ notification, persistentId }) {
   displayNotification(notification);
 }
 
-// 알림을 화면에 표시하는 함수
 let message = "";
 function displayNotification(notification) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -140,13 +184,39 @@ async function clearStaffTokens() {
   }
 }
 
+autoUpdater.on("checking-for-update", () => {
+  log.info("업데이트 확인 중...");
+});
+autoUpdater.on("update-available", info => {
+  log.info("업데이트가 가능합니다.");
+});
+autoUpdater.on("update-not-available", info => {
+  log.info("현재 최신버전입니다.");
+});
+autoUpdater.on("error", err => {
+  log.info("에러가 발생하였습니다. 에러내용 : " + err);
+});
+autoUpdater.on("download-progress", progressObj => {
+  let log_message = "다운로드 속도: " + progressObj.bytesPerSecond;
+  log_message = log_message + " - 현재 " + progressObj.percent + "%";
+  log_message = log_message + " (" + progressObj.transferred + "/" + progressObj.total + ")";
+  log.info(log_message);
+});
+autoUpdater.on("update-downloaded", info => {
+  log.info("업데이트가 완료되었습니다.");
+});
+
 app.whenReady().then(async () => {
+  autoUpdater.checkForUpdates();
   createWindow();
+  enableAutoLaunch();
+
   ipcMain.handle("get-fcm", (event, key) => {
     const value = store.get("fcm_token"); // 데이터 읽기
     console.log(`Data retrieved: ${key} = ${value}`);
     return value;
   });
+
   ipcMain.handle("store:set", async (event, key, value) => {
     store.set(key, value);
     console.log(key, store.get(key));
