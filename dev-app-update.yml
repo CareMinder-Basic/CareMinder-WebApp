@@ -1,0 +1,4 @@
+provider: github
+owner: CareMinder-Basic
+repo: CareMinder-WebApp
+releaseType: release

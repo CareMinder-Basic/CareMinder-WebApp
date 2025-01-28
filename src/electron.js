@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import { app, BrowserWindow, ipcMain, screen, session, protocol } from "electron";
+import { app, BrowserWindow, ipcMain, screen, session, protocol, dialog } from "electron";
 import { join } from "path";
 import { fileURLToPath, format } from "url";
 import Store from "electron-store";
@@ -27,6 +27,10 @@ const firebaseConfig = {
 
 // const __dirname = dirname(fileURLToPath(import.meta.url));
 const { autoUpdater } = updater;
+autoUpdater.forceDevUpdateConfig = true;
+log.transports.file.resolvePath = () => path.join(app.getPath("userData"), "logs/main.log");
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = "info";
 const __filename = fileURLToPath(import.meta.url); // 현재 파일의 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
@@ -57,16 +61,35 @@ const disableAutoLaunch = async () => {
   }
 };
 
+let updateLoadingWindow = null;
+
+function createUpdateLoadingWindow() {
+  updateLoadingWindow = new BrowserWindow({
+    width: 250,
+    height: 250,
+    frame: false,
+    alwaysOnTop: true,
+    transparent: true,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+
+  updateLoadingWindow.loadFile(path.join(__dirname, "update-loading.html"));
+}
+
 function createSplashWindow() {
   const splashWindow = new BrowserWindow({
     width: 250,
     height: 250,
-    frame: false, // 기본 윈도우 프레임 숨기기
-    transparent: true, // 배경 투명화 (스플래시 화면에 적합)
-    alwaysOnTop: true, // 항상 위에 표시
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
     webPreferences: {
       allowRunningInsecureContent: true,
-      nodeIntegration: true, // 노드 통합을 사용하여 HTML에서 노드 기능을 사용할 수 있게 함
+      nodeIntegration: true,
     },
   });
   splashWindow.loadFile(path.join(__dirname, "loading.html"));
@@ -74,7 +97,7 @@ function createSplashWindow() {
 }
 
 async function createWindow() {
-  const splashWindow = createSplashWindow(); // 스플래시 윈도우 생성 및 참조
+  const splashWindow = createSplashWindow();
   const win = new BrowserWindow({
     width: 1920,
     height: 1080,
@@ -114,6 +137,7 @@ async function createWindow() {
 
   win.webContents.on("did-finish-load", () => {
     console.log("Main window has finished loading.");
+
     if (splashWindow && !splashWindow.isDestroyed()) {
       splashWindow.destroy();
       win.show();
@@ -184,32 +208,56 @@ async function clearStaffTokens() {
   }
 }
 
+let isUpdateInProgress = true;
 autoUpdater.on("checking-for-update", () => {
   log.info("업데이트 확인 중...");
 });
 autoUpdater.on("update-available", info => {
   log.info("업데이트가 가능합니다.");
+  const splashWindow = createSplashWindow();
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.destroy();
+    createUpdateLoadingWindow();
+  }
 });
 autoUpdater.on("update-not-available", info => {
   log.info("현재 최신버전입니다.");
+  isUpdateInProgress = false;
 });
 autoUpdater.on("error", err => {
   log.info("에러가 발생하였습니다. 에러내용 : " + err);
+  isUpdateInProgress = false;
 });
 autoUpdater.on("download-progress", progressObj => {
   let log_message = "다운로드 속도: " + progressObj.bytesPerSecond;
   log_message = log_message + " - 현재 " + progressObj.percent + "%";
   log_message = log_message + " (" + progressObj.transferred + "/" + progressObj.total + ")";
   log.info(log_message);
+  if (updateLoadingWindow) {
+    updateLoadingWindow.webContents.send("update-progress", progressObj.percent);
+  }
 });
-autoUpdater.on("update-downloaded", info => {
+autoUpdater.on("update-downloaded", () => {
   log.info("업데이트가 완료되었습니다.");
+
+  if (updateLoadingWindow) {
+    updateLoadingWindow.close();
+    updateLoadingWindow = null;
+  }
+
+  log.info("업데이트 설치를 시작합니다.");
+
+  // 모든 창을 닫고 업데이트 설치 시작
+  BrowserWindow.getAllWindows().forEach(window => window.close());
+  autoUpdater.quitAndInstall(); // 업데이트 설치 후 앱 종료 및 재시작
 });
 
 app.whenReady().then(async () => {
   autoUpdater.checkForUpdates();
-  createWindow();
-  enableAutoLaunch();
+  if (!isUpdateInProgress) {
+    createWindow();
+    enableAutoLaunch();
+  }
 
   ipcMain.handle("get-fcm", (event, key) => {
     const value = store.get("fcm_token"); // 데이터 읽기
