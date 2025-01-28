@@ -114,10 +114,12 @@ export default function NewWardInputField({ field, form }: InputFieldProps) {
       });
       return;
     } else {
+      //@ts-ignore
+      const token = await window.electronStore.get("accessTokenAdmin");
       try {
         const res = await axios.get(`${SEVER_URL}/wards/check-ward-name`, {
           headers: {
-            Authorization: `Bearer ${Cookies.get("accessTokenAdmin")}`,
+            Authorization: `Bearer ${token}`,
           },
           params: {
             wardName: wardName,

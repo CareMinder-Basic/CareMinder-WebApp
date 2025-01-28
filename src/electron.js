@@ -7,7 +7,7 @@ import { register, listen } from "push-receiver-v2";
 import path from "path";
 import sound from "sound-play";
 import AutoLaunch from "auto-launch";
-import { autoUpdater } from "electron-updater";
+import updater from "electron-updater";
 import log from "electron-log";
 
 const autoLauncher = new AutoLaunch({
@@ -26,6 +26,7 @@ const firebaseConfig = {
 };
 
 // const __dirname = dirname(fileURLToPath(import.meta.url));
+const { autoUpdater } = updater;
 const __filename = fileURLToPath(import.meta.url); // 현재 파일의 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
@@ -90,7 +91,6 @@ async function createWindow() {
   });
 
   console.log("HTML File Path:", path.resolve(__dirname, "../dist/index.html"));
-  // 빌드 된 것을 ssh에 올리
 
   const credentials = await register(firebaseConfig);
   console.log(credentials);

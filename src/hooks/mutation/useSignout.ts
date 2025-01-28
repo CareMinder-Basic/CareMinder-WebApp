@@ -36,8 +36,12 @@ const signOut = async (type: UserType) => {
     await window.electronStore.delete("refreshTokenStaff");
   }
   if (type === "ADMIN") {
-    token = Cookies.get("accessTokenAdmin");
+    // token = Cookies.get("accessTokenAdmin");
+    //@ts-ignore
+    const token = await window.electronStore.get("accessTokenWard");
+
     console.log("어드민" + token);
+
     Cookies.set("accessTokenAdmin", "");
     Cookies.set("refreshTokenAdmin", "");
   }

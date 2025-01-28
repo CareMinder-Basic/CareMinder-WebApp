@@ -7,11 +7,12 @@ import UserTypeTag from "@components/signin/UserTypeTag";
 import { useSignin } from "@hooks/mutation";
 import { SigninFormData } from "@models/signin";
 import { UserType } from "@models/user";
-import { Grid, Divider, styled, Stack, Box, Link } from "@mui/material";
+import { Grid, Divider, styled, Stack, Box, Link, Typography } from "@mui/material";
 import RoutePath from "@routes/routePath";
 import { SwitchCase, useBooleanState } from "@toss/react";
 import { ReactElement, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 type SigninLayoutProps = {
   type: UserType;
@@ -23,6 +24,7 @@ export default function SigninLayout({ type, footer, options }: SigninLayoutProp
   const form = useForm<SigninFormData>();
   const { mutate: signin, error } = useSignin();
   const [open, openModal, closeModal] = useBooleanState();
+  const navigate = useNavigate();
 
   const [isopenAccountModal, onOpenAccountModal, closeAccountModal] = useBooleanState(); // 계정 활성화 Modal
   const [openStopModal, onOpenStopModal, closeStopModal] = useBooleanState(); // 계정 활성화 중단 Modal
@@ -105,9 +107,18 @@ export default function SigninLayout({ type, footer, options }: SigninLayoutProp
         {footer && (
           <Footer divider={<Divider orientation="vertical" />}>
             {/* Todo */}
-            <Link href={RoutePath.FindAccount} variant="h3">
+            {/* href={RoutePath.FindAccount} */}
+            <Typography
+              onClick={() => {
+                navigate(RoutePath.FindAccount);
+              }}
+              sx={{
+                cursor: "pointer",
+              }}
+              variant="h3"
+            >
               ID / PW 찾기
-            </Link>
+            </Typography>
             {footer}
           </Footer>
         )}

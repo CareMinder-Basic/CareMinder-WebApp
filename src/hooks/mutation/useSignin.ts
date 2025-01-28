@@ -18,8 +18,12 @@ const signin = async (useInfo: SigninFormData) => {
     const userType: UserType = res.data.currentUser.role;
     switch (userType) {
       case "ADMIN":
-        Cookies.set("accessTokenAdmin", res.data.jwtResponse.accessToken);
-        Cookies.set("refreshTokenAdmin", res.data.jwtResponse.refreshToken);
+        // Cookies.set("accessTokenAdmin", res.data.jwtResponse.accessToken);
+        // Cookies.set("refreshTokenAdmin", res.data.jwtResponse.refreshToken);
+        //@ts-ignore
+        await window.electronStore.set("accessTokenAdmin", res.data.jwtResponse.accessToken);
+        //@ts-ignore
+        await window.electronStore.set("refreshTokenAdmin", res.data.jwtResponse.refreshToken);
         break;
       case "STAFF":
         //@ts-ignore

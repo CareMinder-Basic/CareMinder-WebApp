@@ -1,6 +1,6 @@
 import { Thumbnail, SigninLayout } from "@components/signin";
 import { userState } from "@libraries/recoil";
-import { Box, CircularProgress, Grid, Link } from "@mui/material";
+import { Box, CircularProgress, Grid, Link, Typography } from "@mui/material";
 import RoutePath from "@routes/routePath";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
@@ -30,15 +30,23 @@ export default function SigninPage() {
     );
   }
 
+  // href={RoutePath.AdminSignin}
+
   return (
     <Grid container>
       <Thumbnail />
       <SigninLayout
         type="WARD"
         footer={
-          <Link href={RoutePath.AdminSignin} variant="h3">
+          <Typography
+            onClick={() => navigate(RoutePath.AdminSignin)}
+            variant="h3"
+            sx={{
+              cursor: "pointer",
+            }}
+          >
             어드민 계정 로그인
-          </Link>
+          </Typography>
         }
       />
     </Grid>

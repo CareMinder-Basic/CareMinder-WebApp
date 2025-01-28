@@ -15,8 +15,6 @@ export type LayoutType = {
 export default function Sidebar() {
   const user = useRecoilValue(userState);
 
-  console.log(user);
-
   return (
     <Layout admintype={user?.type as UserType}>
       <SwitchCase

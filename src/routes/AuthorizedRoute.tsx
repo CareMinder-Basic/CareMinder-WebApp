@@ -19,7 +19,8 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
   const [isChecking, setIsChecking] = useState(true);
   const [accessTokenWard, setAccessTokenWard] = useState<string | null>(null);
   const [accessTokenStaff, setAccessTokenStaff] = useState<string | null>(null);
-  const accessTokenAdmin = Cookies.get("accessTokenAdmin");
+  const [accessTokenAdmin, setAccessTokenAdmin] = useState<string | null>(null);
+  // const accessTokenAdmin = Cookies.get("accessTokenAdmin");
   const setUser = useSetRecoilState(userState);
   const setIsModalOpen = useSetRecoilState(modalState);
 
@@ -33,9 +34,12 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
     try {
       const token = await window.tokenAPI.getTokens();
       const staffToken = await window.electronStore.get("accessTokenStaff");
+      //@ts-ignore
+      const adminToken = await window.electronStore.get("accessTokenWard");
 
       setAccessTokenWard(token?.accessToken);
       setAccessTokenStaff(staffToken);
+      setAccessTokenAdmin(adminToken);
       return { wardToken: token?.accessToken, staffToken };
     } catch (error) {
       console.error("Token fetch error:", error);

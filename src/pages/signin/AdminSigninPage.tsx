@@ -1,6 +1,6 @@
 import { Thumbnail, CreateAdminButton, SigninLayout } from "@components/signin";
 import { adminPopupState, userState } from "@libraries/recoil";
-import { Grid, Link } from "@mui/material";
+import { Grid, Link, Typography } from "@mui/material";
 import RoutePath from "@routes/routePath";
 import { useRecoilState, useRecoilValue } from "recoil";
 import Cookies from "js-cookie";
@@ -34,9 +34,18 @@ export default function AdminSigninPage() {
         <SigninLayout
           type="ADMIN"
           footer={
-            <Link href={RoutePath.Signin} variant="h3">
+            // <Link href={RoutePath.Signin} variant="h3">
+            //   병동 계정 로그인
+            // </Link>
+            <Typography
+              onClick={() => navigate(RoutePath.Signin)}
+              variant="h3"
+              sx={{
+                cursor: "pointer",
+              }}
+            >
               병동 계정 로그인
-            </Link>
+            </Typography>
           }
           options={<CreateAdminButton />}
         />

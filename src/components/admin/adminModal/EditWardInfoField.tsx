@@ -70,9 +70,11 @@ export default function EditWardInfoField({ field, form, wardData }: InputFieldP
       try {
         setWardNameDoubleCheck(true);
 
+        //@ts-ignore
+        const token = await window.electronStore.get("accessTokenAdmin");
         const res = await axios.get(`${SEVER_URL}/wards/check-ward-name`, {
           headers: {
-            Authorization: `Bearer ${Cookies.get("accessTokenAdmin")}`,
+            Authorization: `Bearer ${token}`,
           },
           params: {
             wardName: wardName,

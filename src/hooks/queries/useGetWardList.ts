@@ -31,9 +31,11 @@ export type GetWardListProps = {
 };
 
 export const getWardList = async ({ page, size }: GetWardListProps) => {
+  //@ts-ignore
+  const token = await window.electronStore.get("accessTokenWard");
   const res = await axiosInstance.get("/admins/ward-list", {
     headers: {
-      Authorization: `Bearer ${Cookies.get("accessTokenAdmin")}`,
+      Authorization: `Bearer ${token}`,
     },
     params: {
       page: page,
