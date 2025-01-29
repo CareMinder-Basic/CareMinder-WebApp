@@ -80,12 +80,8 @@ export default function useSignOut(type: UserType) {
             name: prev.name,
           };
         });
-
-        // 상태 업데이트가 완료된 후 페이지 이동
-        setTimeout(() => {
-          navigate("/");
-          window.location.reload(); // 페이지 새로고침으로 preload 스크립트 재실행
-        }, 0);
+        navigate("/");
+        window.location.reload();
       } else {
         setUserState(null);
         setTimeout(() => {

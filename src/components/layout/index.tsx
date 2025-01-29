@@ -14,7 +14,6 @@ import modalState from "@libraries/recoil/modal";
 import { useAutoLogout } from "@utils/useAutoLogout";
 import InfoModal from "@components/settings/modal/InfoModal";
 import AutoLogoutMessage from "@components/common/AutoLogout/AutoLogoutMessage";
-import Cookies from "js-cookie";
 
 export default function AuthenticatedLayout() {
   const navigate = useNavigate();
@@ -24,8 +23,6 @@ export default function AuthenticatedLayout() {
   const isModal = useRecoilValue(modalState);
   const setIsModalOpen = useSetRecoilState(modalState);
   const userType = useRecoilValue(userState)?.type;
-  // const accessTokenWard = Cookies.get("accessTokenWard");
-  // const refreshTokenWard = Cookies.get("refreshTokenWard");
   const [accessTokenWard, setAccessTokenWard] = useState("");
   const [refreshTokenWard, setRefreshTokenWard] = useState("");
 
@@ -35,18 +32,35 @@ export default function AuthenticatedLayout() {
 
   const { remaining, reset } = useAutoLogout();
 
+  const checkAndSetTokens = async () => {
+    try {
+      //@ts-ignore
+      const token = await window.tokenAPI.getTokens();
+      console.log(token);
+      setAccessTokenWard(token?.accessToken);
+      setRefreshTokenWard(token?.refreshTOken);
+    } catch (error) {
+      console.error("Token fetch error:", error);
+      return { wardToken: null, staffToken: null };
+    }
+  };
+  // 초기 토큰 체크
+  useEffect(() => {
+    checkAndSetTokens();
+  }, []);
+
   const navigateSignin = useCallbackOnce(() => {
     console.error("로그인이 필요한 서비스입니다.");
     navigate(RoutePath.Signin);
   }, []);
 
-  useEffect(() => {
-    if (!accessTokenWard || !refreshTokenWard) {
-      if (user?.type !== "ADMIN") {
-        // setUser(null);
-      }
-    }
-  }, [accessTokenWard, refreshTokenWard]);
+  // useEffect(() => {
+  //   if (!accessTokenWard || !refreshTokenWard) {
+  //     if (user?.type !== "ADMIN") {
+  //       setUser(null);
+  //     }
+  //   }
+  // }, [accessTokenWard, refreshTokenWard]);
 
   useEffect(() => {
     if (user) {

@@ -430,7 +430,8 @@ export default StaffWardInoutManagementPage;
 const Container = styled(Stack)({
   height: "100%",
   backgroundColor: "rgb(255, 255, 255)",
-  padding: 30,
+  // padding: 30,
+  width: "100%",
   borderRadius: 24,
 });
 

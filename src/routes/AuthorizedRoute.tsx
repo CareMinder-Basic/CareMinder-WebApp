@@ -20,7 +20,6 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
   const [accessTokenWard, setAccessTokenWard] = useState<string | null>(null);
   const [accessTokenStaff, setAccessTokenStaff] = useState<string | null>(null);
   const [accessTokenAdmin, setAccessTokenAdmin] = useState<string | null>(null);
-  // const accessTokenAdmin = Cookies.get("accessTokenAdmin");
   const setUser = useSetRecoilState(userState);
   const setIsModalOpen = useSetRecoilState(modalState);
 
@@ -88,6 +87,7 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
     if (pathname.includes("staff") && accessTokenWard && !accessTokenStaff) {
       setIsChecking(true); // 로딩 상태 활성화
       setIsModalOpen(true);
+
       return;
     }
 
