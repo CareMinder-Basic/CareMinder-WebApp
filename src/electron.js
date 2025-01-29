@@ -214,21 +214,29 @@ autoUpdater.on("checking-for-update", () => {
 });
 autoUpdater.on("update-available", info => {
   log.info("업데이트가 가능합니다.");
+});
+autoUpdater.on("update-not-available", info => {
+  log.info("현재 최신버전입니다.");
+  const splashWindow = createSplashWindow();
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.destroy();
+    createWindow();
+  }
+});
+autoUpdater.on("error", err => {
+  log.info("에러가 발생하였습니다. 에러내용 : " + err);
+  const splashWindow = createSplashWindow();
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.destroy();
+    createWindow();
+  }
+});
+autoUpdater.on("download-progress", progressObj => {
   const splashWindow = createSplashWindow();
   if (splashWindow && !splashWindow.isDestroyed()) {
     splashWindow.destroy();
     createUpdateLoadingWindow();
   }
-});
-autoUpdater.on("update-not-available", info => {
-  log.info("현재 최신버전입니다.");
-  isUpdateInProgress = false;
-});
-autoUpdater.on("error", err => {
-  log.info("에러가 발생하였습니다. 에러내용 : " + err);
-  isUpdateInProgress = false;
-});
-autoUpdater.on("download-progress", progressObj => {
   let log_message = "다운로드 속도: " + progressObj.bytesPerSecond;
   log_message = log_message + " - 현재 " + progressObj.percent + "%";
   log_message = log_message + " (" + progressObj.transferred + "/" + progressObj.total + ")";
@@ -239,7 +247,6 @@ autoUpdater.on("download-progress", progressObj => {
 });
 autoUpdater.on("update-downloaded", () => {
   log.info("업데이트가 완료되었습니다.");
-
   if (updateLoadingWindow) {
     updateLoadingWindow.close();
     updateLoadingWindow = null;
@@ -249,6 +256,7 @@ autoUpdater.on("update-downloaded", () => {
 
   // 모든 창을 닫고 업데이트 설치 시작
   BrowserWindow.getAllWindows().forEach(window => window.close());
+  isUpdateInProgress = false;
   autoUpdater.quitAndInstall(); // 업데이트 설치 후 앱 종료 및 재시작
 });
 

@@ -1,95 +1,113 @@
+<!-- loading.html -->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>업데이트 진행 중</title>
+    <title>Loading...</title>
     <style>
-      body {
-        z-index: 1004;
+      * {
         margin: 0;
         padding: 0;
-        /* background-color: white; */
-        height: 100vh; /* 화면 높이를 100%로 */
-        width: 100vw; /* 화면 너비를 100%로 */
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      body {
         display: flex;
         justify-content: center;
         align-items: center;
-        overflow: hidden;
-        /* background-color: transparent; */
+        height: 100vh;
+        width: 100vw;
+        /* background-color: #ffffff; */
+        font-family: Arial, sans-serif;
+        background-image: url("../public/CareFlow-icon.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: fixed;
+        top: 0;
+        left: 0;
       }
 
-      .notification {
-        background-color: white;
+      .spinner {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+      }
+
+      .spinner > div {
         width: 100%;
-        max-width: 232px; /* 알림창 최대 너비 */
-        position: fixed; /* 알림창을 화면에 고정 */
-        padding: 20px; /* 내부 여백 */
-        display: flex;
-        flex-direction: column;
-        border-radius: 12px;
-        box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.12);
-        color: black;
-        font-size: 16px;
-        z-index: 1000; /* 알림창이 다른 요소 위에 오도록 */
-        animation: slideInRight 0.5s ease-out forwards; /* 초기 애니메이션 */
+        height: 100%;
+        position: relative;
       }
 
-      @keyframes slideInRight {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
+      .spinner > div::before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #3498db;
+        animation: rotate 1.2s infinite ease-in-out both;
+      }
+
+      .spinner > div::after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #3498db;
+        animation: rotate 1.2s infinite ease-in-out both;
+        animation-delay: -0.6s;
+      }
+
+      @keyframes rotate {
+        0% {
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
         }
-        to {
-          transform: translateX(0);
-          opacity: 1;
+        25% {
+          top: 50%;
+          left: 100%;
+          transform: translate(-50%, -50%);
         }
-      }
-
-      @keyframes slideOutRight {
-        from {
-          transform: translateX(0);
-          opacity: 1;
+        50% {
+          top: 100%;
+          left: 50%;
+          transform: translate(-50%, -100%);
         }
-        to {
-          transform: translateX(100%);
-          opacity: 0;
+        75% {
+          top: 50%;
+          left: 0;
+          transform: translate(0, -50%);
         }
-      }
-
-      .notification.hide {
-        animation: slideOutRight 0.5s ease-out forwards; /* 사라질 때 애니메이션 */
-      }
-
-      .notification h2 {
-        margin: 0 0 10px 0; /* 제목 아래 여백 추가 */
-        font-size: 18px;
-        font-weight: bold;
-      }
-
-      .notification p {
-        margin: 0; /* 여백 제거 */
-        line-height: 1.5; /* 줄 간격 조정 */
+        100% {
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+        }
       }
     </style>
   </head>
   <body>
-    <div id="notification" class="notification">
-      <div class="progress-bar">
-        <div class="progress-bar-fill" id="progress-bar-fill"></div>
-      </div>
-      <p id="progress-text">0%</p>
+    <div class="spinner">
+      <div></div>
     </div>
-    <script>
-      const { ipcRenderer } = require("electron");
-
-      ipcRenderer.on("update-progress", (event, percent) => {
-        const progressBarFill = document.getElementById("progress-bar-fill");
-        const progressText = document.getElementById("progress-text");
-
-        progressBarFill.style.width = percent + "%";
-        progressText.textContent = Math.round(percent) + "%";
-      });
-    </script>
   </body>
 </html>

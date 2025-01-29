@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "electron-dev": "electron .",
     "electron-pack": "vite build && electron-builder",
-    "release-mac": "vite build && electron-builder --publish always",
+    "release-mac": "vite build && electron-builder --mac --publish always",
     "release-win": "vite build && electron-builder --win --x64 --publish always"
   },
   "dependencies": {
@@ -111,8 +111,9 @@
     ],
     "mac": {
       "target": [
-        "default"
+        "dmg"
       ],
+      "sign": false,
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "icon": "build/icons.icns",
@@ -129,12 +130,20 @@
         "AppImage"
       ]
     },
-    "publish": {
-      "provider": "github",
-      "owner": "CareMinder-Basic",
-      "repo": "CareMinder-WebApp",
-      "releaseType": "release"
-    },
+    "extraFiles": [
+      {
+        "from": "dist/CareMinder-*.zip",
+        "to": "dist/"
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "CareMinder-Basic",
+        "repo": "CareMinder-WebApp",
+        "releaseType": "release"
+      }
+    ],
     "dmg": {
       "title": "CareMinder",
       "icon": "build/icons.icns"
