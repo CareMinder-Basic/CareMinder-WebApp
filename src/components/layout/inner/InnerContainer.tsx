@@ -1,14 +1,23 @@
 import layoutState from "@libraries/recoil/layout";
 import { Stack, styled } from "@mui/material";
 import { SwitchCase } from "@toss/react";
-import { Outlet } from "react-router-dom";
+import { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 
 export default function InnerContainer() {
-  const layout = useRecoilValue(layoutState);
+  // const layout = useRecoilValue(layoutState);
+  const { pathname } = useLocation();
+
+  console.log(pathname);
+
+  const layoutType = pathname === "/" || pathname === "/staff" ? "home" : "other";
+
+  console.log(layoutType);
+
   return (
     <SwitchCase
-      value={layout as string}
+      value={layoutType as string}
       caseBy={{
         home: (
           <InnerHomeContainer>

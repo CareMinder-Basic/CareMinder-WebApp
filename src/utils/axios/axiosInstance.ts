@@ -114,7 +114,7 @@ axiosInstance.interceptors.request.use(
       case "STAFF":
         //@ts-ignore
         const staffTokens = await window.electronStore.get("accessTokenStaff");
-        console.log("staffToken", staffTokens);
+
         token = staffTokens;
         break;
       case "ADMIN":

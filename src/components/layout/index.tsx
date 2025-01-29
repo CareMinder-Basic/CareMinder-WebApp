@@ -2,7 +2,7 @@ import Sidebar from "./sidebar";
 import Header from "./header";
 
 import { Box, Stack, styled } from "@mui/material";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { userState } from "@libraries/recoil";
 import { useNavigate } from "react-router";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -14,6 +14,8 @@ import modalState from "@libraries/recoil/modal";
 import { useAutoLogout } from "@utils/useAutoLogout";
 import InfoModal from "@components/settings/modal/InfoModal";
 import AutoLogoutMessage from "@components/common/AutoLogout/AutoLogoutMessage";
+
+const InnerContainerMemoized = memo(InnerContainer);
 
 export default function AuthenticatedLayout() {
   const navigate = useNavigate();
@@ -36,12 +38,14 @@ export default function AuthenticatedLayout() {
     try {
       //@ts-ignore
       const token = await window.tokenAPI.getTokens();
-      console.log(token);
-      setAccessTokenWard(token?.accessToken);
-      setRefreshTokenWard(token?.refreshTOken);
+      if (token?.accessToken !== accessTokenWard) {
+        setAccessTokenWard(token?.accessToken);
+      }
+      if (token?.refreshTOken !== refreshTokenWard) {
+        setRefreshTokenWard(token?.refreshTOken);
+      }
     } catch (error) {
       console.error("Token fetch error:", error);
-      return { wardToken: null, staffToken: null };
     }
   };
   // 초기 토큰 체크
@@ -115,7 +119,7 @@ export default function AuthenticatedLayout() {
       <Body>
         <Sidebar />
         <OuterContainer>
-          <InnerContainer />
+          <InnerContainerMemoized />
         </OuterContainer>
       </Body>
     </Container>

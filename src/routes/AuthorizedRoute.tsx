@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { UserType } from "@models/user";
@@ -14,7 +14,7 @@ type AuthorizedRouteProps = {
 
 export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
   const user = useRecoilValue(userState);
   const [isChecking, setIsChecking] = useState(true);
   const [accessTokenWard, setAccessTokenWard] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
     try {
       const token = await window.tokenAPI.getTokens();
       const staffToken = await window.electronStore.get("accessTokenStaff");
-      //@ts-ignore
+
       const adminToken = await window.electronStore.get("accessTokenWard");
 
       setAccessTokenWard(token?.accessToken);
@@ -83,14 +83,6 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
       (user.type === "STAFF" && accessTokenStaff) ||
       (user.type === "ADMIN" && accessTokenAdmin);
 
-    // WARD 토큰으로 staff 경로 진입 시 체크
-    if (pathname.includes("staff") && accessTokenWard && !accessTokenStaff) {
-      setIsChecking(true); // 로딩 상태 활성화
-      setIsModalOpen(true);
-
-      return;
-    }
-
     // 권한 체크
     if (allowedRoles.includes(user.type) && hasValidToken) {
       setIsChecking(false);
@@ -113,11 +105,15 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
 
     // staff 페이지 접근 제어
     if (pathname.includes("staff")) {
-      if (!accessTokenStaff && user.type === "STAFF") {
-        navigate("/");
-        setIsModalOpen(false);
-      } else if (accessTokenWard && user.type === "WARD") {
+      const previousPath = sessionStorage.getItem("previousPath");
+      // WARD 토큰으로 staff 경로 진입 시 체크
+      if (previousPath) {
+        sessionStorage.removeItem("previousPath");
+        setIsChecking(false);
+      } else if (accessTokenWard && !accessTokenStaff) {
+        setIsChecking(true); // 로딩 상태 활성화
         setIsModalOpen(true);
+        return;
       }
     }
   }, [

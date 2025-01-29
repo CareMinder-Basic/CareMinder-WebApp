@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@libraries/recoil";
 import { UserType } from "@models/user";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { SEVER_URL } from "@constants/baseUrl";
 import autoCompleteIdState from "@libraries/recoil/autoCompleteId";
 import { logoutServiceWorker } from "@components/fcm/serviceWorker";
@@ -63,6 +63,7 @@ export default function useSignOut(type: UserType) {
   const setUserState = useSetRecoilState(userState);
   const setAutoCompleteId = useSetRecoilState(autoCompleteIdState);
   const navigate = useNavigate();
+  const location = useLocation();
 
   return useMutation({
     mutationFn: () => signOut(type),
@@ -80,8 +81,9 @@ export default function useSignOut(type: UserType) {
             name: prev.name,
           };
         });
-        navigate("/");
-        window.location.reload();
+        sessionStorage.setItem("previousPath", location.pathname);
+        navigate("/", { state: { from: location.pathname } });
+        // window.location.reload();
       } else {
         setUserState(null);
         setTimeout(() => {

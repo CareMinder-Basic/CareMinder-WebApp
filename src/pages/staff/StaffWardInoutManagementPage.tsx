@@ -28,6 +28,8 @@ import useChangeTabletArea from "@hooks/mutation/useChangeWardTabletArea";
 import { useGetStaffAreaList } from "@hooks/queries/useGetAreaList";
 import { useQueryClient } from "@tanstack/react-query";
 import MemoModal from "@components/admin/admininout/modal/memo-modal";
+import { useSetRecoilState } from "recoil";
+import { layoutState } from "@libraries/recoil";
 
 type SelectedItem = {
   name: string;
@@ -96,6 +98,11 @@ const StaffWardInoutManagementPage = () => {
   const { mutate } = useDischargePatients();
   const [selected, setSelected] = useState<Array<SelectedItem>>([]);
   const [memoData, setMemoData] = useState<{ patientName: string; patientId: number }>();
+  // const setlayoutState = useSetRecoilState(layoutState);
+
+  // useEffect(() => {
+  //   setlayoutState("other");
+  // }, []);
 
   const onChangeSelectAll = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -429,7 +436,7 @@ export default StaffWardInoutManagementPage;
 
 const Container = styled(Stack)({
   height: "100%",
-  backgroundColor: "rgb(255, 255, 255)",
+  // backgroundColor: "rgb(255, 255, 255)",
   // padding: 30,
   width: "100%",
   borderRadius: 24,
