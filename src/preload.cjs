@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld("api", {
   getNotification: async () => await ipcRenderer.invoke("get-notification"),
   send: (channel, data) => ipcRenderer.send(channel, data),
   receive: (channel, callback) => ipcRenderer.on(channel, (event, ...args) => callback(...args)),
+  onInitUserType: callback =>
+    ipcRenderer.on("init-user-type", (event, userType) => callback(userType)),
 });
 
 contextBridge.exposeInMainWorld("electronStore", {

@@ -73,7 +73,6 @@ const StaffWardInoutManagementPage = () => {
   }, []);
   useEffect(() => {
     const getToken = async () => {
-      //@ts-ignore
       const token = await window.electronStore.get("accessTokenStaff");
       setStaffToken(token);
     };

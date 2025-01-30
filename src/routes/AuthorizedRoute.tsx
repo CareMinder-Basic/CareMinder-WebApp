@@ -34,15 +34,12 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
       const token = await window.tokenAPI.getTokens();
       const staffToken = await window.electronStore.get("accessTokenStaff");
 
-      const adminToken = await window.electronStore.get("accessTokenWard");
-
+      const adminToken = await window.electronStore.get("accessTokenAdmin");
       setAccessTokenWard(token?.accessToken);
       setAccessTokenStaff(staffToken);
       setAccessTokenAdmin(adminToken);
-      return { wardToken: token?.accessToken, staffToken };
     } catch (error) {
       console.error("Token fetch error:", error);
-      return { wardToken: null, staffToken: null };
     }
   };
 
@@ -77,6 +74,8 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
   // 라우팅 및 권한 체크
   useEffect(() => {
     if (!user || !allowedRoles) return;
+
+    console.log(accessTokenAdmin);
 
     const hasValidToken =
       (user.type === "WARD" && accessTokenWard) ||

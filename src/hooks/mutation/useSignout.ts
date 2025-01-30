@@ -16,45 +16,46 @@ const signOut = async (type: UserType) => {
     //@ts-ignore
     const tokens = await window.tokenAPI.getTokens();
     token = tokens.accessToken;
-
-    console.log("병동" + token);
-    Cookies.set("accessTokenWard", "");
-    Cookies.set("refreshTokenWard", "");
     //@ts-expect-error
     await window.electronStore.delete("accessTokenWard");
     //@ts-expect-error
     await window.electronStore.delete("refreshTokenWard");
   }
   if (type === "STAFF") {
-    //@ts-expect-error
     const accessTokenStaff = await window.electronStore.get("accessTokenStaff");
     token = accessTokenStaff;
-    console.log("스태프" + accessTokenStaff);
-    //@ts-expect-error
     await window.electronStore.delete("accessTokenStaff");
-    //@ts-expect-error
     await window.electronStore.delete("refreshTokenStaff");
   }
   if (type === "ADMIN") {
     // token = Cookies.get("accessTokenAdmin");
     //@ts-ignore
-    const token = await window.electronStore.get("accessTokenWard");
-
+    const accessTokenAdmin = await window.electronStore.get("accessTokenAdmin");
+    token = accessTokenAdmin;
     console.log("어드민" + token);
-
-    Cookies.set("accessTokenAdmin", "");
-    Cookies.set("refreshTokenAdmin", "");
   }
-  const res = await axios.post(
-    `${SEVER_URL}/users/logout`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+
+  if (type === "ADMIN") {
+    const res = await axios.post(
+      `${SEVER_URL}/admins/logout`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  );
-  console.log(res);
+    );
+  } else {
+    const res = await axios.post(
+      `${SEVER_URL}/users/logout`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+  }
 
   return true;
 };

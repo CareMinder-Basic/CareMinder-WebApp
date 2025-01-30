@@ -34,15 +34,16 @@ export default function AuthenticatedLayout() {
 
   const { remaining, reset } = useAutoLogout();
 
+  const setUserState = useSetRecoilState(userState);
+
   const checkAndSetTokens = async () => {
     try {
-      //@ts-ignore
       const token = await window.tokenAPI.getTokens();
       if (token?.accessToken !== accessTokenWard) {
         setAccessTokenWard(token?.accessToken);
       }
-      if (token?.refreshTOken !== refreshTokenWard) {
-        setRefreshTokenWard(token?.refreshTOken);
+      if (token?.refreshToken !== refreshTokenWard) {
+        setRefreshTokenWard(token?.refreshToken);
       }
     } catch (error) {
       console.error("Token fetch error:", error);
@@ -57,14 +58,6 @@ export default function AuthenticatedLayout() {
     console.error("로그인이 필요한 서비스입니다.");
     navigate(RoutePath.Signin);
   }, []);
-
-  // useEffect(() => {
-  //   if (!accessTokenWard || !refreshTokenWard) {
-  //     if (user?.type !== "ADMIN") {
-  //       setUser(null);
-  //     }
-  //   }
-  // }, [accessTokenWard, refreshTokenWard]);
 
   useEffect(() => {
     if (user) {

@@ -58,9 +58,6 @@ axiosInstance.interceptors.response.use(
           refreshEndpoint,
           {},
           {
-            // headers: {
-            //   Authorization: `Bearer ${Cookies.get(token)}`,
-            // },
             headers: {
               Authorization: `Bearer ${token.refreshToken}`,
             },
@@ -70,14 +67,19 @@ axiosInstance.interceptors.response.use(
         if (!response.data) {
           return Promise.reject(new Error("토큰 리프레쉬 실패"));
         }
-        Cookies.set(accessTokenKey, response.data.accessToken);
-        Cookies.set(refreshTokenKey, response.data.refreshToken);
+
+        // electron store에 새로운 토큰 저장
+        await window.electronStore.set(accessTokenKey, response.data.accessToken);
+        await window.electronStore.set(refreshTokenKey, response.data.refreshToken);
 
         // 원래 요청 재시도
         error.config.headers.Authorization = `Bearer ${response.data.accessToken}`;
         return axiosInstance.request(error.config);
       } catch (refreshError) {
         if (refreshError instanceof AxiosError && refreshError.status === 401) {
+          // 토큰 갱신 실패 시 토큰 삭제
+          await window.electronStore.delete(accessTokenKey);
+          await window.electronStore.delete(refreshTokenKey);
           window.location.href = "/sign-in";
         }
         return Promise.reject(refreshError);
@@ -107,21 +109,16 @@ axiosInstance.interceptors.request.use(
 
     switch (userType) {
       case "WARD":
-        //@ts-ignore
         const tokens = await window.tokenAPI.getTokens();
         token = tokens.accessToken;
         break;
       case "STAFF":
-        //@ts-ignore
         const staffTokens = await window.electronStore.get("accessTokenStaff");
-
         token = staffTokens;
         break;
       case "ADMIN":
-        //@ts-ignore
         const adminToken = await window.electronStore.get("accessTokenAdmin");
         token = adminToken;
-        // token = Cookies.get("accessTokenAdmin") as string;
         break;
       default:
         null;
