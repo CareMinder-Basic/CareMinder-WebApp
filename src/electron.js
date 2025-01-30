@@ -302,11 +302,11 @@ autoUpdater.on("update-downloaded", () => {
 });
 
 app.whenReady().then(async () => {
-  autoUpdater.checkForUpdates();
-  if (!isUpdateInProgress) {
-    createWindow();
-    enableAutoLaunch();
-  }
+  // autoUpdater.checkForUpdates();
+  // if (!isUpdateInProgress) {
+  createWindow();
+  enableAutoLaunch();
+  // }
 
   ipcMain.handle("get-fcm", (event, key) => {
     const value = store.get("fcm_token"); // 데이터 읽기
