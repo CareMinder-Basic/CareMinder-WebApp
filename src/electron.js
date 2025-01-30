@@ -3,7 +3,6 @@ import { app, BrowserWindow, ipcMain, screen, session, protocol, dialog } from "
 import { join } from "path";
 import { fileURLToPath, format } from "url";
 import Store from "electron-store";
-import { register, listen } from "push-receiver-v2";
 import path from "path";
 import sound from "sound-play";
 import AutoLaunch from "auto-launch";
@@ -14,16 +13,6 @@ const autoLauncher = new AutoLaunch({
   name: "CareMinder", // 애플리케이션 이름
   path: app.getPath("exe"), // 애플리케이션 경로
 });
-
-const firebaseConfig = {
-  firebase: {
-    apiKey: "AIzaSyDr2aG0diglJe-A-lC9VqpfLnoEz1Baj4I",
-    appID: "1:264563409584:web:228f2d074c73b057023175",
-    projectID: "careminder-e50ae",
-  },
-  vapidKey:
-    "BDOPhFvQMqh6P-qImnWLcs_eCrPP04JOZ3MYUS1aPhdrsxq1HrliVRIaIcC7mMr2Xcw7zYQyVvEtuTD8D3ux1pU", // optional
-};
 
 // const __dirname = dirname(fileURLToPath(import.meta.url));
 const { autoUpdater } = updater;
@@ -114,19 +103,11 @@ async function createWindow() {
       allowRunningInsecureContent: true,
       webSecurity: false,
       // preload: path.join("file:", __dirname, "preload.mjs"),
-      preload: path.resolve(__dirname, "preload.js"),
+      preload: path.resolve(__dirname, "preload.cjs"),
     },
   });
 
   console.log("HTML File Path:", path.resolve(__dirname, "../dist/index.html"));
-
-  const credentials = await register(firebaseConfig);
-  console.log(credentials);
-
-  const savedFcmToken = store.get("fcm_token");
-  console.log("Retrieved FCM Token:", savedFcmToken);
-
-  await listen({ ...credentials }, onNotification);
 
   // win.loadURL("http://localhost:5173");
   const startUrl = format({
@@ -166,8 +147,8 @@ let message = "";
 function displayNotificationBackground(notification) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   sound.play(path.join(__dirname, "alarm.wav"));
-  const notificationWidth = 302;
-  const notificationHeight = 118;
+  const notificationWidth = 1180;
+  const notificationHeight = 1180;
   const x = width - notificationWidth - 10;
   const y = height - notificationHeight + 10;
   let notificationWindow = new BrowserWindow({
@@ -181,16 +162,15 @@ function displayNotificationBackground(notification) {
     webPreferences: {
       nodeIntegration: true,
       allowRunningInsecureContent: true,
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.cjs"),
     },
   });
 
   notificationWindow.loadURL(path.join("file:", __dirname, "notification.html"));
 
-  message = notification.data.data;
-
+  message = notification.content;
   notificationWindow.webContents.on("did-finish-load", () => {
-    notificationWindow.webContents.send("set-message", notification.data.data);
+    notificationWindow.webContents.send("set-message", notification);
   });
 
   setTimeout(() => {
@@ -217,13 +197,12 @@ function displayNotificationForground(notification) {
     webPreferences: {
       nodeIntegration: true,
       allowRunningInsecureContent: true,
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.cjs"),
     },
   });
 
   notificationWindow.loadURL(path.join("file:", __dirname, "notification.html"));
-
-  message = notification.data.data;
+  message = notification.content;
 
   notificationWindow.webContents.on("did-finish-load", () => {
     notificationWindow.webContents.send("set-message", notification.data.data);
@@ -332,16 +311,17 @@ app.whenReady().then(async () => {
     const refreshToken = store.get("refreshTokenWard");
     return { accessToken, refreshToken };
   });
-  ipcMain.handle("get-notification", (event, key) => {
-    return message;
+  ipcMain.handle("get-notification", async event => {
+    console.log("📩 Electron이 알림을 반환합니다:", message);
+    return message; // Renderer에게 전달
   });
 
   ipcMain.on("sse-message", (event, message) => {
-    console.log("📩 Electron이 받은 SSE 메시지:", message);
+    // console.log("📩 Electron이 받은 SSE 메시지:", message);
     if (isAppInBackground()) {
-      displayNotificationBackground({});
+      displayNotificationBackground(message);
     } else {
-      displayNotificationForground({});
+      displayNotificationForground(message);
     }
   });
 });

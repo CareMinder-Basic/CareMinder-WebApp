@@ -203,7 +203,6 @@
   </head>
   <body>
     <div id="notification" class="notification">
-      <div class="title">알림 도착</div>
       <div class="place">
         <div class="ball"></div>
         <span id="areaName"></span> | <span id="patientName"></span>
@@ -216,13 +215,12 @@
         const sound = new Audio("/alarm.wav");
         sound.play();
 
-        const notification = await window.electron.getNotification();
+        const notification = await window.api.getNotification();
         console.log(notification);
 
-        const notificationJson = JSON.parse(notification);
-        document.getElementById("content").textContent = notificationJson.content.requestContent;
-        document.getElementById("areaName").textContent = notificationJson.content.areaName;
-        document.getElementById("patientName").textContent = notificationJson.content.patientName;
+        document.getElementById("content").textContent = notification.requestContent;
+        document.getElementById("areaName").textContent = notification.areaName;
+        document.getElementById("patientName").textContent = notification.patientName;
       };
 
       getMessage();

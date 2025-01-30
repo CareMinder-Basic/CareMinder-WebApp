@@ -38,15 +38,15 @@ export default function UserHeader() {
         };
 
         // ✅ `message` 이벤트 리스너 추가 (일반 이벤트 수신)
-        eventSource.addEventListener("dummy", event => {
-          console.log("📩 SSE 'notification' 이벤트 발생:", event);
-          window.api.send("sse-message", "테스트");
+        eventSource.addEventListener("notification", event => {
+          const jsonData = JSON.parse(event.data);
+          console.log("📩 SSE 'notification' 이벤트 발생:", jsonData);
+          window.api.send("sse-message", jsonData);
         });
 
         // ✅ `onmessage` 로깅 추가
         eventSource.onmessage = event => {
           console.log("📩 SSE 메시지 수신:", event.data);
-
           // ✅ JSON 데이터 파싱
           try {
             const jsonData = JSON.parse(event.data);
