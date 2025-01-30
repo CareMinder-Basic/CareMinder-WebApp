@@ -40,9 +40,12 @@ const enableAutoLaunch = async () => {
   }
 };
 
+// 앱이 백그라운드 상태인지 확인하는 함수 수정
 function isAppInBackground() {
   const windows = BrowserWindow.getAllWindows();
-  return !windows.some(win => win.isFocused()); // 포커스된 창이 없으면 백그라운드
+  return windows.every(win => {
+    return win.isMinimized() || !win.isFocused() || !win.isVisible();
+  });
 }
 
 // 자동 실행 비활성화 함수
@@ -138,6 +141,18 @@ async function createWindow() {
       win.show();
     }
   });
+
+  win.on("minimize", () => {
+    console.log("Window minimized");
+  });
+
+  win.on("focus", () => {
+    console.log("Window focused");
+  });
+
+  win.on("blur", () => {
+    console.log("Window lost focus");
+  });
 }
 
 let persistentIds = [];
@@ -156,18 +171,20 @@ let message = "";
 function displayNotificationBackground(notification) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   sound.play(path.join(__dirname, "alarm.wav"));
-  const notificationWidth = 1180;
-  const notificationHeight = 1180;
+  const notificationWidth = 302;
+  const notificationHeight = 118;
   const x = width - notificationWidth - 10;
-  const y = height - notificationHeight + 10;
+  const y = height - notificationHeight - 10;
   let notificationWindow = new BrowserWindow({
     width: notificationWidth,
     height: notificationHeight,
     frame: false,
     alwaysOnTop: true,
     transparent: true,
-    x: x, // x 좌표 설정
-    y: y, // y 좌표 설정
+    backgroundColor: "#00000000", // 완전 투명 배경 추가
+    hasShadow: false, // 그림자 제거
+    x: x,
+    y: y,
     webPreferences: {
       nodeIntegration: true,
       allowRunningInsecureContent: true,
@@ -312,10 +329,13 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.on("sse-message", (event, message) => {
-    // console.log("📩 Electron이 받은 SSE 메시지:", message);
+    console.log("📩 Electron이 SSE 메시지를 받음. 백그라운드 상태:", isAppInBackground());
+
     if (isAppInBackground()) {
+      console.log("백그라운드 알림 표시");
       displayNotificationBackground(message);
     } else {
+      console.log("포그라운드 알림 표시");
       displayNotificationForground(message);
     }
   });
