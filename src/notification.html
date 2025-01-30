@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -99,6 +99,138 @@
         const notificationElement = document.getElementById("notification");
         notificationElement.classList.add("hide");
       }, 5000); // 4초 후 알림 사라짐
+    </script>
+  </body>
+</html> -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Notification</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .notification {
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        padding: 16px;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+        max-width: 400px;
+        border-radius: 12px;
+        background-color: #eaf8ea; /* 배경색 */
+        box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.12);
+        animation: slideInRight 1s ease forwards;
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      .notification.hide {
+        animation: slideOutRight 1s ease forwards;
+      }
+
+      .title {
+        font-weight: 700;
+        border-bottom: 1px solid rgba(196, 197, 204, 1);
+        margin-bottom: 12px;
+        padding: 1px 10px 3px 10px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .place {
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+      }
+
+      .contents {
+        font-weight: 500;
+        border-radius: 6px;
+        padding: 8px 8px 8px 16px;
+        border: 1px solid rgba(236, 236, 236, 1);
+        height: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white;
+        min-width: 200px;
+      }
+
+      .ball {
+        width: 16px;
+        height: 16px;
+        background-color: #04b300;
+        margin-right: 5px;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="notification" class="notification">
+      <div class="title">알림 도착</div>
+      <div class="place">
+        <div class="ball"></div>
+        <span id="areaName"></span> | <span id="patientName"></span>
+      </div>
+      <div class="contents" id="content"></div>
+    </div>
+
+    <script>
+      const getMessage = async () => {
+        const sound = new Audio("/alarm.wav");
+        sound.play();
+
+        const notification = await window.electron.getNotification();
+        console.log(notification);
+
+        const notificationJson = JSON.parse(notification);
+        document.getElementById("content").textContent = notificationJson.content.requestContent;
+        document.getElementById("areaName").textContent = notificationJson.content.areaName;
+        document.getElementById("patientName").textContent = notificationJson.content.patientName;
+      };
+
+      getMessage();
+
+      setTimeout(() => {
+        const notificationElement = document.getElementById("notification");
+        notificationElement.classList.add("hide");
+      }, 5000); // 5초 후 알림 사라짐
     </script>
   </body>
 </html>

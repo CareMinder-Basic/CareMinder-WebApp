@@ -51,6 +51,11 @@ const enableAutoLaunch = async () => {
   }
 };
 
+function isAppInBackground() {
+  const windows = BrowserWindow.getAllWindows();
+  return !windows.some(win => win.isFocused()); // 포커스된 창이 없으면 백그라운드
+}
+
 // 자동 실행 비활성화 함수
 const disableAutoLaunch = async () => {
   try {
@@ -154,17 +159,53 @@ function onNotification({ notification, persistentId }) {
     return; // 중복 알림
   }
   persistentIds.push(newPersistentId);
-  displayNotification(notification);
+  displayNotificationBackground(notification);
 }
 
 let message = "";
-function displayNotification(notification) {
+function displayNotificationBackground(notification) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   sound.play(path.join(__dirname, "alarm.wav"));
   const notificationWidth = 302;
   const notificationHeight = 118;
   const x = width - notificationWidth - 10;
-  const y = height - notificationHeight + 100;
+  const y = height - notificationHeight + 10;
+  let notificationWindow = new BrowserWindow({
+    width: notificationWidth,
+    height: notificationHeight,
+    frame: false,
+    alwaysOnTop: true,
+    transparent: true,
+    x: x, // x 좌표 설정
+    y: y, // y 좌표 설정
+    webPreferences: {
+      nodeIntegration: true,
+      allowRunningInsecureContent: true,
+      preload: path.join(__dirname, "preload.js"),
+    },
+  });
+
+  notificationWindow.loadURL(path.join("file:", __dirname, "notification.html"));
+
+  message = notification.data.data;
+
+  notificationWindow.webContents.on("did-finish-load", () => {
+    notificationWindow.webContents.send("set-message", notification.data.data);
+  });
+
+  setTimeout(() => {
+    notificationWindow.close();
+    notificationWindow = null;
+  }, 5500);
+}
+
+function displayNotificationForground(notification) {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  sound.play(path.join(__dirname, "alarm.wav"));
+  const notificationWidth = 302;
+  const notificationHeight = 118;
+  const x = width - notificationWidth - 10;
+  const y = 10;
   let notificationWindow = new BrowserWindow({
     width: notificationWidth,
     height: notificationHeight,
@@ -293,6 +334,15 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle("get-notification", (event, key) => {
     return message;
+  });
+
+  ipcMain.on("sse-message", (event, message) => {
+    console.log("📩 Electron이 받은 SSE 메시지:", message);
+    if (isAppInBackground()) {
+      displayNotificationBackground({});
+    } else {
+      displayNotificationForground({});
+    }
   });
 });
 
