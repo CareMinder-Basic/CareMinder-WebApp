@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { UserType } from "@models/user";
 import { SEVER_URL } from "@constants/baseUrl";
 import reqChangePWState from "@libraries/recoil/reqChangePW";
+import wardState from "@libraries/recoil/ward";
+import accountActiveState from "@libraries/recoil/accountActive";
 
 const signin = async (useInfo: SigninFormData) => {
   const res = await axios.post(`${SEVER_URL}/users/login`, useInfo);
@@ -34,7 +36,9 @@ const signin = async (useInfo: SigninFormData) => {
 export default function useSignin() {
   const navigate = useNavigate();
   const setUserState = useSetRecoilState(userState);
+  const setWardState = useSetRecoilState(wardState);
   const setReqChangePWState = useSetRecoilState(reqChangePWState);
+  const setAccountActiveState = useSetRecoilState(accountActiveState);
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -42,8 +46,14 @@ export default function useSignin() {
     onSuccess: async res => {
       queryClient.invalidateQueries({ queryKey: ["useGetWardPatientPending"] });
       console.log("로그인 성공");
+      if (res.currentUser.role === "WARD") {
+        setWardState({
+          id: res.currentUser?.accountId,
+          name: res.currentUser?.name,
+          type: res.currentUser?.role,
+        });
+      }
       // 추가 응답 API 개발 완료 후
-      //@ts-ignore
       await window.electronStore.set("userType", {
         id: res.currentUser?.accountId,
         name: res.currentUser?.name,
@@ -63,6 +73,7 @@ export default function useSignin() {
             break;
           case "STAFF":
             setReqChangePWState(res.currentUser?.passwordChangeRequested);
+            setAccountActiveState(res.currentUser?.accountStatus === "INACTIVE");
             navigate("/staff");
             // handleAllowNotification();
             break;

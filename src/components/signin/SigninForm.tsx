@@ -7,6 +7,7 @@ import { userState } from "@libraries/recoil";
 import { useRecoilValue } from "recoil";
 import autoCompleteIdState from "@libraries/recoil/autoCompleteId";
 import axiosInstance from "@utils/axios/axiosInstance";
+import wardState from "@libraries/recoil/ward";
 
 type SigninFormProps = {
   form: UseFormReturn<SigninFormData>;
@@ -18,13 +19,14 @@ export default function SigninForm({ form, onSubmit, type }: SigninFormProps) {
   const { handleSubmit, watch } = form;
   const user = useRecoilValue(userState);
   const autoCompleteId = useRecoilValue(autoCompleteIdState);
-
+  const wardInfo = useRecoilValue(wardState);
   const userType = type === user?.type ? user?.type : type;
 
   const handleFormSubmit = (data: SigninFormData) => {
     const updatedData = {
       ...data,
       accountType: userType,
+      wardId: user?.type === "WARD" || user?.type === "STAFF" ? wardInfo?.id : undefined,
     };
     onSubmit(updatedData);
   };
