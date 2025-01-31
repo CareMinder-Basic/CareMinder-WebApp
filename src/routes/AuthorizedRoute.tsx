@@ -33,13 +33,24 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
     try {
       const token = await window.tokenAPI.getTokens();
       const staffToken = await window.electronStore.get("accessTokenStaff");
-
       const adminToken = await window.electronStore.get("accessTokenAdmin");
+
       setAccessTokenWard(token?.accessToken);
       setAccessTokenStaff(staffToken);
       setAccessTokenAdmin(adminToken);
+
+      return {
+        wardToken: token?.accessToken || null,
+        staffToken: staffToken || null,
+        adminToken: adminToken || null,
+      };
     } catch (error) {
       console.error("Token fetch error:", error);
+      return {
+        wardToken: null,
+        staffToken: null,
+        adminToken: null,
+      };
     }
   };
 
@@ -53,7 +64,7 @@ export default function AuthorizedRoute({ allowedRoles }: AuthorizedRouteProps) 
     if (!user) return;
 
     const updateUserType = async () => {
-      const { wardToken, staffToken } = await checkAndSetTokens();
+      const { wardToken, staffToken, adminToken } = await checkAndSetTokens();
 
       if (staffToken && user.type !== "STAFF") {
         setUser(prev => ({
