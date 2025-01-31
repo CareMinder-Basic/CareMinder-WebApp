@@ -1,11 +1,26 @@
 import { EventSourcePolyfill, MessageEvent } from "event-source-polyfill";
 import { SEVER_URL } from "@constants/baseUrl"; // Fixed typo in SERVER_URL
 
-export const openSSE = async ({ checkType }: { checkType: string }): Promise<() => void> => {
+export const openSSE = async ({
+  checkType,
+  userType,
+}: {
+  checkType: string;
+  userType: string;
+}): Promise<() => void> => {
   try {
     // ✅ 토큰 가져오기
     const tokens = await window.tokenAPI.getTokens();
-    const token = tokens.accessToken;
+    const accessTokenStaff = await window.electronStore.get("accessTokenStaff");
+    let token;
+
+    if (userType === "WARD") {
+      token = tokens.accessToken;
+    }
+
+    if (userType === "STAFF") {
+      token = accessTokenStaff;
+    }
 
     if (!token) {
       console.error("🚨 토큰이 없습니다. SSE 연결 중단.");
@@ -31,8 +46,9 @@ export const openSSE = async ({ checkType }: { checkType: string }): Promise<() 
     eventSource.addEventListener(`${checkType}`, (event: MessageEvent) => {
       const jsonData = JSON.parse(event.data);
       console.log("📩 SSE 'notification' 이벤트 발생:", jsonData);
-      console.log(jsonData);
       window.api.send("sse-message", jsonData);
+      const audio = new Audio("alarm.wav"); // public 폴더 내 파일
+      audio.play().catch(error => console.error("🔇 알림 소리 재생 실패:", error));
     });
 
     // ✅ `onmessage` 로깅 추가

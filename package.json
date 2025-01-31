@@ -2,8 +2,8 @@
   "name": "careminder-pc",
   "private": true,
   "author": "nimod",
-  "description": "CareMinder",
-  "version": "1.0.0",
+  "description": "CareFlow",
+  "version": "1.0.3",
   "type": "module",
   "main": "src/electron.js",
   "scripts": {
@@ -28,12 +28,12 @@
     "@toss/react": "^1.7.0",
     "@types/stompjs": "^2.3.9",
     "@types/uuid": "^10.0.0",
+    "auto-launch": "^5.0.6",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
     "electron-log": "^5.2.4",
     "electron-store": "^10.0.0",
-    "electron-updater": "^6.3.9",
     "eslint-plugin-prettier": "5.2.1",
     "event-source-polyfill": "^1.0.31",
     "firebase": "^10.8.0",
@@ -94,9 +94,13 @@
   },
   "build": {
     "asar": true,
+    "asarUnpack": [
+      "**/*.wav",
+      "node_modules/sound-play/**"
+    ],
     "compression": "maximum",
     "appId": "com.careflow.careminder",
-    "productName": "CareMinder",
+    "productName": "CareFlow",
     "directories": {
       "output": "dist"
     },
@@ -119,6 +123,7 @@
       "category": "public.app-category.healthcare"
     },
     "win": {
+      "verifyUpdateCodeSignature": false,
       "target": [
         "nsis"
       ],
@@ -131,7 +136,7 @@
     },
     "extraFiles": [
       {
-        "from": "dist/CareMinder-*.zip",
+        "from": "dist/CareFlow-*.zip",
         "to": "dist/"
       }
     ],
@@ -144,7 +149,7 @@
       }
     ],
     "dmg": {
-      "title": "CareMinder",
+      "title": "CareFlow",
       "icon": "build/icons.icns"
     },
     "nsis": {
@@ -154,9 +159,9 @@
       "perMachine": true,
       "language": 1042,
       "installerIcon": "build/ico/icon_256.ico",
-      "shortcutName": "CareMinder",
-      "artifactName": "CareMinder-${version}.${ext}",
-      "uninstallDisplayName": "CareMinder"
+      "shortcutName": "CareFlow",
+      "artifactName": "CareFlow-${version}.${ext}",
+      "uninstallDisplayName": "CareFlow"
     }
   }
 }

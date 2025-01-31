@@ -12,7 +12,7 @@ export default function UserHeader() {
   const userType = useRecoilValue(userState)?.type;
   useEffect(() => {
     console.log("접근");
-    openSSE({ checkType: "notification" });
+    openSSE({ checkType: "notification", userType: userType as string });
   }, [userType]);
   return (
     <>

@@ -4,7 +4,7 @@ import { join } from "path";
 import { fileURLToPath, format } from "url";
 import Store from "electron-store";
 import path from "path";
-import sound from "sound-play";
+// import sound from "sound-play";
 import AutoLaunch from "auto-launch";
 
 const autoLauncher = new AutoLaunch({
@@ -151,7 +151,6 @@ function onNotification(notification, persistentId) {
 let message = "";
 function displayNotificationBackground(notification) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  sound.play(path.join(__dirname, "alarm.wav"));
   const notificationWidth = 302;
   const notificationHeight = 118;
   const x = width - notificationWidth - 10;
@@ -188,7 +187,6 @@ function displayNotificationBackground(notification) {
 
 function displayNotificationForground(notification) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  sound.play(path.join(__dirname, "alarm.wav"));
   const notificationWidth = 302;
   const notificationHeight = 118;
   const x = width - notificationWidth - 10;
