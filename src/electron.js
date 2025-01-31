@@ -6,20 +6,12 @@ import Store from "electron-store";
 import path from "path";
 import sound from "sound-play";
 import AutoLaunch from "auto-launch";
-import updater from "electron-updater";
-import log from "electron-log";
 
 const autoLauncher = new AutoLaunch({
   name: "CareMinder", // 애플리케이션 이름
   path: app.getPath("exe"), // 애플리케이션 경로
 });
 
-// const __dirname = dirname(fileURLToPath(import.meta.url));
-const { autoUpdater } = updater;
-autoUpdater.forceDevUpdateConfig = true;
-log.transports.file.resolvePath = () => path.join(app.getPath("userData"), "logs/main.log");
-autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = "info";
 const __filename = fileURLToPath(import.meta.url); // 현재 파일의 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
@@ -105,14 +97,12 @@ async function createWindow() {
       enableRemoteModule: false,
       allowRunningInsecureContent: true,
       webSecurity: false,
-      // preload: path.join("file:", __dirname, "preload.mjs"),
       preload: path.resolve(__dirname, "preload.cjs"),
     },
   });
 
   console.log("HTML File Path:", path.resolve(__dirname, "../dist/index.html"));
 
-  // win.loadURL("http://localhost:5173");
   const startUrl = format({
     pathname: path.resolve(__dirname, "../dist/index.html"),
     protocol: "file:",
@@ -123,8 +113,6 @@ async function createWindow() {
 
   /** 시작 포인트 실행 */
   win.loadURL(startUrl);
-
-  // win.loadFile(filePath);
 
   win.webContents.on("did-finish-load", () => {
     console.log("Main window has finished loading.");
@@ -141,30 +129,23 @@ async function createWindow() {
       win.show();
     }
   });
-
-  win.on("minimize", () => {
-    console.log("Window minimized");
-  });
-
-  win.on("focus", () => {
-    console.log("Window focused");
-  });
-
-  win.on("blur", () => {
-    console.log("Window lost focus");
-  });
 }
 
 let persistentIds = [];
 
-function onNotification({ notification, persistentId }) {
+function onNotification(notification, persistentId) {
   console.log("Notification received:", notification, persistentId);
-  const newPersistentId = notification.data.data;
+  const newPersistentId = notification.content.patientRequestId;
   if (persistentIds.includes(newPersistentId)) {
     return; // 중복 알림
   }
   persistentIds.push(newPersistentId);
-  displayNotificationBackground(notification);
+  if (isAppInBackground()) {
+    displayNotificationBackground(notification);
+  } else {
+    displayNotificationForground(notification);
+  }
+  // displayNotificationBackground(notification);
 }
 
 let message = "";
@@ -231,7 +212,7 @@ function displayNotificationForground(notification) {
   message = notification.content;
 
   notificationWindow.webContents.on("did-finish-load", () => {
-    notificationWindow.webContents.send("set-message", notification.data.data);
+    notificationWindow.webContents.send("set-message", notification);
   });
 
   setTimeout(() => {
@@ -240,64 +221,9 @@ function displayNotificationForground(notification) {
   }, 5500);
 }
 
-let isUpdateInProgress = true;
-autoUpdater.on("checking-for-update", () => {
-  log.info("업데이트 확인 중...");
-});
-autoUpdater.on("update-available", info => {
-  log.info("업데이트가 가능합니다.");
-});
-autoUpdater.on("update-not-available", info => {
-  log.info("현재 최신버전입니다.");
-  const splashWindow = createSplashWindow();
-  if (splashWindow && !splashWindow.isDestroyed()) {
-    splashWindow.destroy();
-    createWindow();
-  }
-});
-autoUpdater.on("error", err => {
-  log.info("에러가 발생하였습니다. 에러내용 : " + err);
-  const splashWindow = createSplashWindow();
-  if (splashWindow && !splashWindow.isDestroyed()) {
-    splashWindow.destroy();
-    createWindow();
-  }
-});
-autoUpdater.on("download-progress", progressObj => {
-  const splashWindow = createSplashWindow();
-  if (splashWindow && !splashWindow.isDestroyed()) {
-    splashWindow.destroy();
-    createUpdateLoadingWindow();
-  }
-  let log_message = "다운로드 속도: " + progressObj.bytesPerSecond;
-  log_message = log_message + " - 현재 " + progressObj.percent + "%";
-  log_message = log_message + " (" + progressObj.transferred + "/" + progressObj.total + ")";
-  log.info(log_message);
-  if (updateLoadingWindow) {
-    updateLoadingWindow.webContents.send("update-progress", progressObj.percent);
-  }
-});
-autoUpdater.on("update-downloaded", () => {
-  log.info("업데이트가 완료되었습니다.");
-  if (updateLoadingWindow) {
-    updateLoadingWindow.close();
-    updateLoadingWindow = null;
-  }
-
-  log.info("업데이트 설치를 시작합니다.");
-
-  // 모든 창을 닫고 업데이트 설치 시작
-  BrowserWindow.getAllWindows().forEach(window => window.close());
-  isUpdateInProgress = false;
-  autoUpdater.quitAndInstall(); // 업데이트 설치 후 앱 종료 및 재시작
-});
-
 app.whenReady().then(async () => {
-  // autoUpdater.checkForUpdates();
-  // if (!isUpdateInProgress) {
   createWindow();
   enableAutoLaunch();
-  // }
 
   ipcMain.handle("get-fcm", (event, key) => {
     const value = store.get("fcm_token"); // 데이터 읽기
@@ -330,12 +256,11 @@ app.whenReady().then(async () => {
 
   ipcMain.on("sse-message", (event, message) => {
     console.log("📩 Electron이 SSE 메시지를 받음. 백그라운드 상태:", isAppInBackground());
-
     if (isAppInBackground()) {
-      console.log("백그라운드 알림 표시");
+      console.log(message);
       displayNotificationBackground(message);
     } else {
-      console.log("포그라운드 알림 표시");
+      console.log(message);
       displayNotificationForground(message);
     }
   });
