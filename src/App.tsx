@@ -5,9 +5,6 @@ import Router from "@routes/router";
 export default function App() {
   return (
     <AppRegister>
-      {/* <HashRouter>
-        <RouterProvider router={Router} fallbackElement={null} />
-      </HashRouter> */}
       <RouterProvider router={Router} fallbackElement={null} />
     </AppRegister>
   );

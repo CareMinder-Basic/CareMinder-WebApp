@@ -4,7 +4,6 @@ import { join } from "path";
 import { fileURLToPath, format } from "url";
 import Store from "electron-store";
 import path from "path";
-// import sound from "sound-play";
 import AutoLaunch from "auto-launch";
 
 const autoLauncher = new AutoLaunch({
@@ -18,6 +17,8 @@ const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 config({ path: join(__dirname, "../.env") });
 const isDev = process.env.VITE_IS_DEV === "true";
 const store = new Store();
+
+let win; // 전역 변수로 선언
 
 // 자동 실행 활성화 함수
 const enableAutoLaunch = async () => {
@@ -84,16 +85,22 @@ function createSplashWindow() {
   splashWindow.loadFile(path.join(__dirname, "loading.html"));
   return splashWindow;
 }
+const startUrl = format({
+  pathname: path.resolve(__dirname, "../dist/index.html"),
+  protocol: "file:",
+  slashes: true,
+});
 
 async function createWindow() {
   const splashWindow = createSplashWindow();
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 1920,
     height: 1080,
     show: false,
     webPreferences: {
-      nodeIntegration: false,
+      nodeIntegration: true,
       contextIsolation: true,
+      webviewTag: true,
       enableRemoteModule: false,
       allowRunningInsecureContent: true,
       webSecurity: false,
@@ -101,22 +108,23 @@ async function createWindow() {
     },
   });
 
-  console.log("HTML File Path:", path.resolve(__dirname, "../dist/index.html"));
+  const accessTokenWard = store.get("accessTokenWard");
+  const refreshTokenWard = store.get("refreshTokenWard");
+  const accessTokenAdmin = store.get("accessTokenAdmin");
+  const refreshTokenAdmin = store.get("refreshTokenAdmin");
 
-  const startUrl = format({
-    pathname: path.resolve(__dirname, "../dist/index.html"),
-    protocol: "file:",
-    slashes: true,
-  });
+  console.log(accessTokenAdmin, refreshTokenAdmin);
 
-  console.log(store.get("userType"));
+  if (accessTokenWard && refreshTokenWard) {
+    win.loadFile(path.join(__dirname, "webview.html"));
+  } else {
+    win.loadURL(startUrl);
+  }
 
   /** 시작 포인트 실행 */
-  win.loadURL(startUrl);
 
   win.webContents.on("did-finish-load", () => {
     console.log("Main window has finished loading.");
-
     // userType을 renderer로 전달
     const userType = store.get("userType");
 
@@ -129,23 +137,6 @@ async function createWindow() {
       win.show();
     }
   });
-}
-
-let persistentIds = [];
-
-function onNotification(notification, persistentId) {
-  console.log("Notification received:", notification, persistentId);
-  const newPersistentId = notification.content.patientRequestId;
-  if (persistentIds.includes(newPersistentId)) {
-    return; // 중복 알림
-  }
-  persistentIds.push(newPersistentId);
-  if (isAppInBackground()) {
-    displayNotificationBackground(notification);
-  } else {
-    displayNotificationForground(notification);
-  }
-  // displayNotificationBackground(notification);
 }
 
 let message = "";
@@ -174,7 +165,8 @@ function displayNotificationBackground(notification) {
 
   notificationWindow.loadURL(path.join("file:", __dirname, "notification.html"));
 
-  message = notification.content;
+  const content = JSON.parse(notification.data);
+  message = content.content;
   notificationWindow.webContents.on("did-finish-load", () => {
     notificationWindow.webContents.send("set-message", notification);
   });
@@ -207,7 +199,8 @@ function displayNotificationForground(notification) {
   });
 
   notificationWindow.loadURL(path.join("file:", __dirname, "notification.html"));
-  message = notification.content;
+  const content = JSON.parse(notification.data);
+  message = content.content;
 
   notificationWindow.webContents.on("did-finish-load", () => {
     notificationWindow.webContents.send("set-message", notification);
@@ -250,6 +243,28 @@ app.whenReady().then(async () => {
   ipcMain.handle("get-notification", async event => {
     console.log("📩 Electron이 알림을 반환합니다:", message);
     return message; // Renderer에게 전달
+  });
+
+  ipcMain.on("login-success-ward", (event, tokens) => {
+    store.set("accessTokenWard", tokens.accessToken);
+    store.set("refreshTokenWard", tokens.refreshToken);
+    win.loadFile(path.join(__dirname, "webview.html"));
+  });
+  ipcMain.on("login-success-admin", (event, tokens) => {
+    store.set("accessTokenAdmin", tokens.accessToken);
+    store.set("refreshTokenAdmin", tokens.refreshToken);
+    win.loadFile(path.join(__dirname, "webview.html"));
+  });
+
+  ipcMain.handle("get-user-info", () => {
+    const userInfo = store.get("userType");
+    return userInfo;
+  });
+
+  ipcMain.on("logout-ward", () => {
+    store.delete("accessTokenWard");
+    store.delete("refreshTokenWard");
+    win.loadURL(startUrl);
   });
 
   ipcMain.on("sse-message", (event, message) => {

@@ -12,6 +12,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "electron-dev": "vite build && electron .",
+    "electron-dev-local": "concurrently \"vite\" \"electron .\"",
     "electron-pack": "vite build && electron-builder",
     "release-mac": "vite build && electron-builder --mac --publish always",
     "release-win": "vite build && electron-builder --win --x64 --publish always"

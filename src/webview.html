@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>CareFlow</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #container {
+        background-color: #edeff2;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      #button {
+        width: 40px;
+        height: 40px;
+        background-color: red;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      #webview-container {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+      }
+      #myWebview {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="webview-container">
+        <webview id="myWebview" src="http://localhost:5173" allowfullscreen></webview>
+      </div>
+    </div>
+
+    <script>
+      const webview = document.getElementById("myWebview");
+      async function sendMessageToWebview() {
+        const tokens = await window.tokenAPI.getTokens();
+        const userInfo = await window.authAPI.getUserInfo();
+        console.log(userInfo);
+        console.log(tokens);
+        webview.executeJavaScript(`
+            window.postMessage({
+              type: 'WARD',
+              user: ${JSON.stringify(userInfo)},
+              token: ${JSON.stringify(tokens)}
+            }, "*");
+        `);
+      }
+
+      webview.addEventListener("console-message", event => {
+        try {
+          if (event.message.startsWith("{") && event.message.endsWith("}")) {
+            const message = JSON.parse(event.message);
+            console.log(message);
+            if (message.type === "sendAuth") {
+              switch (message.action) {
+                case "logoutWard":
+                  window.authAPI.logoutWard();
+                  break;
+              }
+            }
+            if (message.type === "Notification") {
+              const data = JSON.parse(message.data);
+              window.api.send("sse-message", message);
+            }
+          }
+        } catch (error) {
+          console.error("메시지 파싱 에러:", error);
+        }
+      });
+
+      webview.addEventListener("dom-ready", async () => {
+        console.log("WebView is ready");
+        webview.openDevTools();
+        await sendMessageToWebview();
+      });
+    </script>
+  </body>
+</html>

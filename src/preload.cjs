@@ -15,20 +15,26 @@ contextBridge.exposeInMainWorld("electronStore", {
   delete: key => ipcRenderer.invoke("store:delete", key),
 });
 
-contextBridge.exposeInMainWorld("Fcm", {
-  // getFcmData: key => ipcRenderer.invoke(key),
-  getFcmData: async key => {
-    try {
-      const result = await ipcRenderer.invoke("get-fcm", key);
-      console.log("접근");
-      return result;
-    } catch (error) {
-      console.error("Error in getFcmData:", error);
-      throw error;
-    }
-  },
-});
-
 contextBridge.exposeInMainWorld("tokenAPI", {
   getTokens: async () => await ipcRenderer.invoke("get-tokens"), // 토큰 가져오기
+});
+
+contextBridge.exposeInMainWorld("authAPI", {
+  loginSuccessWard: tokens => ipcRenderer.send("login-success-ward", tokens),
+
+  loginSuccessStaff: tokens => ipcRenderer.send("login-success-staff", tokens),
+
+  loginSuccessAdmin: tokens => ipcRenderer.send("login-success-admin", tokens),
+
+  // 유저 정보 반환
+  getUserInfo: async () => await ipcRenderer.invoke("get-user-info"),
+
+  // 로그아웃
+  logoutWard: () => ipcRenderer.send("logout-ward"),
+
+  // 토큰 검증
+  validateToken: async () => await ipcRenderer.invoke("validate-token"),
+
+  // 토큰 갱신
+  refreshToken: async () => await ipcRenderer.invoke("refresh-token"),
 });
