@@ -53,13 +53,13 @@
       async function sendMessageToWebview() {
         const tokens = await window.tokenAPI.getTokens();
         const userInfo = await window.authAPI.getUserInfo();
-        console.log(userInfo);
-        console.log(tokens);
+        const wardState = await window.electronStore.get("wardState");
         webview.executeJavaScript(`
             window.postMessage({
               type: 'WARD',
               user: ${JSON.stringify(userInfo)},
-              token: ${JSON.stringify(tokens)}
+              token: ${JSON.stringify(tokens)},
+              wardState: ${JSON.stringify(wardState)}
             }, "*");
         `);
       }

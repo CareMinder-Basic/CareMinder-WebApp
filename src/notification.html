@@ -127,7 +127,6 @@
       const getMessage = async () => {
         // const sound = new Audio("/alarm.wav");
         // sound.play();
-
         const notification = await window.api.getNotification();
         console.log(notification);
         document.getElementById("content").textContent = notification.requestContent;
