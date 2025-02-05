@@ -34,9 +34,6 @@ export default function AdminSigninPage() {
         <SigninLayout
           type="ADMIN"
           footer={
-            // <Link href={RoutePath.Signin} variant="h3">
-            //   병동 계정 로그인
-            // </Link>
             <Typography
               onClick={() => navigate(RoutePath.Signin)}
               variant="h3"

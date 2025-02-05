@@ -16,21 +16,23 @@ contextBridge.exposeInMainWorld("electronStore", {
 });
 
 contextBridge.exposeInMainWorld("tokenAPI", {
-  getTokens: async () => await ipcRenderer.invoke("get-tokens"), // 토큰 가져오기
+  getTokens: async () => await ipcRenderer.invoke("get-tokens"),
+  getTokensAdmin: async () => await ipcRenderer.invoke("get-tokens-admin"),
 });
 
 contextBridge.exposeInMainWorld("authAPI", {
   loginSuccessWard: tokens => ipcRenderer.send("login-success-ward", tokens),
-
-  loginSuccessStaff: tokens => ipcRenderer.send("login-success-staff", tokens),
 
   loginSuccessAdmin: tokens => ipcRenderer.send("login-success-admin", tokens),
 
   // 유저 정보 반환
   getUserInfo: async () => await ipcRenderer.invoke("get-user-info"),
 
-  // 로그아웃
+  // 병동 로그아웃
   logoutWard: () => ipcRenderer.send("logout-ward"),
+
+  // 어드민 로그아웃
+  logoutAdmin: () => ipcRenderer.send("logout-admin"),
 
   // 토큰 검증
   validateToken: async () => await ipcRenderer.invoke("validate-token"),

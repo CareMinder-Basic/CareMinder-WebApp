@@ -44,17 +44,31 @@
   <body>
     <div id="container">
       <div id="webview-container">
-        <webview id="myWebview" src="http://localhost:5173" allowfullscreen></webview>
+        <div
+          style="
+            z-index: 1000;
+            position: absolute;
+
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+          "
+        >
+          웹뷰
+        </div>
+        <webview id="myWebview" src="https://dev.careflow.co.kr/sign-in" allowfullscreen></webview>
+        <!-- <webview id="myWebview" src="http://localhost:5173/sign-in" allowfullscreen></webview> -->
       </div>
     </div>
-
     <script>
       const webview = document.getElementById("myWebview");
       async function sendMessageToWebview() {
-        const tokens = await window.tokenAPI.getTokens();
         const userInfo = await window.authAPI.getUserInfo();
-        const wardState = await window.electronStore.get("wardState");
-        webview.executeJavaScript(`
+
+        console.log(userInfo.type);
+        if (userInfo.type === "WARD") {
+          const wardState = await window.electronStore.get("wardState");
+          const tokens = await window.tokenAPI.getTokens();
+          webview.executeJavaScript(`
             window.postMessage({
               type: 'WARD',
               user: ${JSON.stringify(userInfo)},
@@ -62,6 +76,18 @@
               wardState: ${JSON.stringify(wardState)}
             }, "*");
         `);
+        } else if (userInfo.type === "ADMIN") {
+          const tokens = await window.tokenAPI.getTokensAdmin();
+          console.log(tokens);
+          webview.executeJavaScript(`window.postMessage({
+            type: 'ADMIN',
+            user: ${JSON.stringify(userInfo)},
+            token: ${JSON.stringify(tokens)},
+          }, "*");`);
+          // webview.addEventListener("dom-ready", () => {
+          //   webview.src = "http://localhost:5173/admin";
+          // });
+        }
       }
 
       webview.addEventListener("console-message", event => {
@@ -73,6 +99,9 @@
               switch (message.action) {
                 case "logoutWard":
                   window.authAPI.logoutWard();
+                  break;
+                case "logoutAdmin":
+                  window.authAPI.logoutAdmin();
                   break;
               }
             }

@@ -112,10 +112,14 @@ async function createWindow() {
   const refreshTokenWard = store.get("refreshTokenWard");
   const accessTokenAdmin = store.get("accessTokenAdmin");
   const refreshTokenAdmin = store.get("refreshTokenAdmin");
+  const userType = store.get("userType");
 
-  console.log(accessTokenAdmin, refreshTokenAdmin);
+  console.log(userType.type, accessTokenAdmin, refreshTokenAdmin);
 
-  if (accessTokenWard && refreshTokenWard) {
+  if (
+    (userType.type === "WARD" && accessTokenWard && refreshTokenWard) ||
+    (userType.type === "ADMIN" && accessTokenAdmin && refreshTokenAdmin)
+  ) {
     win.loadFile(path.join(__dirname, "webview.html"));
   } else {
     win.loadURL(startUrl);
@@ -240,6 +244,11 @@ app.whenReady().then(async () => {
     const refreshToken = store.get("refreshTokenWard");
     return { accessToken, refreshToken };
   });
+  ipcMain.handle("get-tokens-admin", () => {
+    const accessToken = store.get("accessTokenAdmin");
+    const refreshToken = store.get("refreshTokenAdmin");
+    return { accessToken, refreshToken };
+  });
   ipcMain.handle("get-notification", async event => {
     console.log("📩 Electron이 알림을 반환합니다:", message);
     return message; // Renderer에게 전달
@@ -264,6 +273,12 @@ app.whenReady().then(async () => {
   ipcMain.on("logout-ward", () => {
     store.delete("accessTokenWard");
     store.delete("refreshTokenWard");
+    win.loadURL(startUrl);
+  });
+
+  ipcMain.on("logout-admin", () => {
+    store.delete("accessTokenAdmin");
+    store.delete("refreshTokenAdmin");
     win.loadURL(startUrl);
   });
 
