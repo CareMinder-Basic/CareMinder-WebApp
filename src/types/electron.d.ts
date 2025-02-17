@@ -18,5 +18,9 @@ declare global {
       receive: (channel: string, callback: (...args: any[]) => void) => void;
       onInitUserType: (callback: (userType: string) => void) => void;
     };
+    authAPI: {
+      loginSuccessWard: (tokens: { accessToken: string; refreshToken: string }) => void;
+      loginSuccessStaff: (tokens: { accessToken: string; refreshToken: string }) => void;      
+      loginSuccessAdmin: (tokens: { accessToken: string; refreshToken: string }) => void;      
   }
 }

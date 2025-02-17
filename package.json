@@ -12,6 +12,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "electron-dev": "vite build && electron .",
+    "electron-dev-local": "concurrently \"vite\" \"electron .\"",
     "electron-pack": "vite build && electron-builder",
     "release-mac": "vite build && electron-builder --mac --publish always",
     "release-win": "vite build && electron-builder --win --x64 --publish always"
@@ -163,5 +164,6 @@
       "artifactName": "CareFlow-${version}.${ext}",
       "uninstallDisplayName": "CareFlow"
     }
-  }
+  },
+  "packageManager": "yarn@4.2.2+sha512.c44e283c54e02de9d1da8687025b030078c1b9648d2895a65aab8e64225bfb7becba87e1809fc0b4b6778bbd47a1e2ab6ac647de4c5e383a53a7c17db6c3ff4b"
 }

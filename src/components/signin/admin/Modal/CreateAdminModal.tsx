@@ -66,6 +66,7 @@ export default function CreateAdminModal({ onClose, ...props }: CMModalProps) {
     };
 
     console.log(defaultAdminRequest);
+
     mutate(defaultAdminRequest, {
       onSuccess: () => {
         console.log("어드민 회원가입 성공");

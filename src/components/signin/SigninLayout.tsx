@@ -106,8 +106,6 @@ export default function SigninLayout({ type, footer, options }: SigninLayoutProp
         </Content>
         {footer && (
           <Footer divider={<Divider orientation="vertical" />}>
-            {/* Todo */}
-            {/* href={RoutePath.FindAccount} */}
             <Typography
               onClick={() => {
                 navigate(RoutePath.FindAccount);

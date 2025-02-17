@@ -6,7 +6,6 @@ import CButton from "@components/common/atom/C-Button";
 import { userState } from "@libraries/recoil";
 import { useRecoilValue } from "recoil";
 import autoCompleteIdState from "@libraries/recoil/autoCompleteId";
-import axiosInstance from "@utils/axios/axiosInstance";
 import wardState from "@libraries/recoil/ward";
 
 type SigninFormProps = {
@@ -22,11 +21,13 @@ export default function SigninForm({ form, onSubmit, type }: SigninFormProps) {
   const wardInfo = useRecoilValue(wardState);
   const userType = type === user?.type ? user?.type : type;
 
+  console.log(userType);
+
   const handleFormSubmit = (data: SigninFormData) => {
     const updatedData = {
       ...data,
       accountType: userType,
-      wardId: user?.type === "WARD" || user?.type === "STAFF" ? wardInfo?.id : undefined,
+      wardId: userType === "WARD" || userType === "STAFF" ? wardInfo?.id : undefined,
     };
     onSubmit(updatedData);
   };

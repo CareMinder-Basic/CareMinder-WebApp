@@ -12,6 +12,7 @@
       body {
         margin: 0;
         padding: 0;
+        color: rgb(94, 95, 101);
         background: transparent;
         -webkit-app-region: drag;
         overflow: hidden;
@@ -27,7 +28,8 @@
         width: 270px;
         height: 86px;
         border-radius: 12px;
-        background-color: #eaf8ea;
+        /* background-color: #eaf8ea; */
+        background-color: white;
         animation: slideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         transform-origin: right center;
         will-change: transform, opacity;
@@ -97,8 +99,8 @@
       .contents {
         font-weight: 500;
         border-radius: 6px;
-        padding: 8px 8px 8px 16px;
-        border: 1px solid rgba(236, 236, 236, 1);
+        padding: 20px 8px 8px 16px;
+        border-top: 1px solid rgba(236, 236, 236, 1);
         overflow: hidden;
         text-overflow: ellipsis;
         background-color: white;
@@ -112,13 +114,20 @@
         margin-right: 5px;
         border-radius: 50%;
       }
+      .areadName {
+        margin-right: 10px;
+      }
+      .patientName {
+        margin-left: 10px;
+      }
     </style>
   </head>
   <body>
     <div id="notification" class="notification">
       <div class="place">
         <div class="ball"></div>
-        <span id="areaName"></span> | <span id="patientName"></span>
+        <span id="areaName" class="areadName"></span> |
+        <span id="patientName" class="patientName"></span>
       </div>
       <div class="contents" id="content"></div>
     </div>
@@ -127,7 +136,6 @@
       const getMessage = async () => {
         // const sound = new Audio("/alarm.wav");
         // sound.play();
-
         const notification = await window.api.getNotification();
         console.log(notification);
         document.getElementById("content").textContent = notification.requestContent;
