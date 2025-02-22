@@ -18,11 +18,12 @@ contextBridge.exposeInMainWorld("electronStore", {
 contextBridge.exposeInMainWorld("tokenAPI", {
   getTokens: async () => await ipcRenderer.invoke("get-tokens"),
   getTokensAdmin: async () => await ipcRenderer.invoke("get-tokens-admin"),
+  getTokensStaff: async () => await ipcRenderer.invoke("get-tokens-staff"),
 });
 
 contextBridge.exposeInMainWorld("authAPI", {
   loginSuccessWard: tokens => ipcRenderer.send("login-success-ward", tokens),
-
+  loginSuccessStaff: tokens => ipcRenderer.send("login-success-staff", tokens),
   loginSuccessAdmin: tokens => ipcRenderer.send("login-success-admin", tokens),
 
   // 유저 정보 반환

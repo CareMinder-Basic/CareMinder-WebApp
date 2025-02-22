@@ -114,32 +114,51 @@ async function createWindow() {
   const refreshTokenAdmin = store.get("refreshTokenAdmin");
   const userType = store.get("userType");
 
-  console.log(userType.type, accessTokenAdmin, refreshTokenAdmin);
-
-  if (
-    (userType.type === "WARD" && accessTokenWard && refreshTokenWard) ||
-    (userType.type === "ADMIN" && accessTokenAdmin && refreshTokenAdmin)
-  ) {
-    win.loadFile(path.join(__dirname, "webview.html"));
-  } else {
+  // userType이 없는 경우 처리 추가
+  if (!userType) {
     win.loadURL(startUrl);
+  } else {
+    console.log("User type and tokens:", userType.type, accessTokenAdmin, refreshTokenAdmin);
+    if (
+      (userType.type === "WARD" && accessTokenWard && refreshTokenWard) ||
+      (userType.type === "ADMIN" && accessTokenAdmin && refreshTokenAdmin)
+    ) {
+      win.loadFile(path.join(__dirname, "webview.html"));
+    } else {
+      win.loadURL(startUrl);
+    }
   }
 
-  /** 시작 포인트 실행 */
-
+  // 로딩 완료 이벤트 핸들러 수정
   win.webContents.on("did-finish-load", () => {
     console.log("Main window has finished loading.");
-    // userType을 renderer로 전달
-    const userType = store.get("userType");
 
-    if (userType) {
-      win.webContents.send("init-user-type", userType);
-    }
+    setTimeout(() => {
+      if (splashWindow && !splashWindow.isDestroyed()) {
+        splashWindow.destroy();
+        win.show();
+      }
+    }, 1000);
+  });
 
+  // 에러 처리 추가
+  win.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
+    console.error("Window failed to load:", errorDescription);
     if (splashWindow && !splashWindow.isDestroyed()) {
       splashWindow.destroy();
-      win.show();
     }
+    win.show();
+  });
+
+  console.log("Loading path:", path.join(__dirname, "webview.html"));
+  console.log("Start URL:", startUrl);
+
+  win.webContents.on("dom-ready", () => {
+    console.log("DOM is ready");
+  });
+
+  win.webContents.on("did-start-loading", () => {
+    console.log("Started loading content");
   });
 }
 
@@ -244,6 +263,11 @@ app.whenReady().then(async () => {
     const refreshToken = store.get("refreshTokenWard");
     return { accessToken, refreshToken };
   });
+  ipcMain.handle("get-tokens-staff", () => {
+    const accessToken = store.get("accessTokenStaff");
+    const refreshToken = store.get("refreshTokenStaff");
+    return { accessToken, refreshToken };
+  });
   ipcMain.handle("get-tokens-admin", () => {
     const accessToken = store.get("accessTokenAdmin");
     const refreshToken = store.get("refreshTokenAdmin");
@@ -257,6 +281,11 @@ app.whenReady().then(async () => {
   ipcMain.on("login-success-ward", (event, tokens) => {
     store.set("accessTokenWard", tokens.accessToken);
     store.set("refreshTokenWard", tokens.refreshToken);
+    win.loadFile(path.join(__dirname, "webview.html"));
+  });
+  ipcMain.on("login-success-staff", (event, tokens) => {
+    store.set("accessTokenStaff", tokens.accessToken);
+    store.set("refreshTokenStaff", tokens.refreshToken);
     win.loadFile(path.join(__dirname, "webview.html"));
   });
   ipcMain.on("login-success-admin", (event, tokens) => {
@@ -273,6 +302,11 @@ app.whenReady().then(async () => {
   ipcMain.on("logout-ward", () => {
     store.delete("accessTokenWard");
     store.delete("refreshTokenWard");
+    win.loadURL(startUrl);
+  });
+  ipcMain.on("logout-staff", () => {
+    store.delete("accessTokenStaff");
+    store.delete("refreshTokenStaff");
     win.loadURL(startUrl);
   });
 
