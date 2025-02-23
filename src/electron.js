@@ -110,6 +110,8 @@ async function createWindow() {
 
   const accessTokenWard = store.get("accessTokenWard");
   const refreshTokenWard = store.get("refreshTokenWard");
+  const accessTokenStaff = store.get("accessTokenStaff");
+  const refreshTokenStaff = store.get("refreshTokenStaff");
   const accessTokenAdmin = store.get("accessTokenAdmin");
   const refreshTokenAdmin = store.get("refreshTokenAdmin");
   const userType = store.get("userType");
@@ -120,7 +122,8 @@ async function createWindow() {
   } else {
     console.log("User type and tokens:", userType.type, accessTokenAdmin, refreshTokenAdmin);
     if (
-      (userType.type === "WARD" && accessTokenWard && refreshTokenWard) ||
+      // (userType.type === "WARD" && accessTokenWard && refreshTokenWard) ||
+      (userType.type === "STAFF" && accessTokenStaff && refreshTokenStaff) ||
       (userType.type === "ADMIN" && accessTokenAdmin && refreshTokenAdmin)
     ) {
       win.loadFile(path.join(__dirname, "webview.html"));
