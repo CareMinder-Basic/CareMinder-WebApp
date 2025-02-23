@@ -197,6 +197,12 @@ function displayNotificationBackground(notification) {
     notificationWindow.webContents.send("set-message", notification);
   });
 
+  notificationWindow.webContents.on("click", () => {
+    if (win) {
+      win.focus();
+    }
+  });
+
   setTimeout(() => {
     notificationWindow.close();
     notificationWindow = null;
@@ -230,6 +236,12 @@ function displayNotificationForground(notification) {
 
   notificationWindow.webContents.on("did-finish-load", () => {
     notificationWindow.webContents.send("set-message", notification);
+  });
+
+  notificationWindow.webContents.on("click", () => {
+    if (win) {
+      win.focus();
+    }
   });
 
   setTimeout(() => {
