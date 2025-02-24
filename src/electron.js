@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import { app, BrowserWindow, ipcMain, screen, session, protocol, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, screen, session, protocol, dialog,Tray } from "electron";
 import { join } from "path";
 import { fileURLToPath, format } from "url";
 import Store from "electron-store";
@@ -19,6 +19,7 @@ const isDev = process.env.VITE_IS_DEV === "true";
 const store = new Store();
 
 let win; // 전역 변수로 선언
+let tray;
 
 // 자동 실행 활성화 함수
 const enableAutoLaunch = async () => {
@@ -141,6 +142,10 @@ async function createWindow() {
       win.show();
     }
   });
+  win.webContents.on('close', (event) => {
+    event.preventDefault();
+    win.hide(); // 창을 닫는 대신 숨깁니다.
+  });
 }
 
 let message = "";
@@ -219,6 +224,26 @@ function displayNotificationForground(notification) {
 app.whenReady().then(async () => {
   createWindow();
   enableAutoLaunch();
+
+  
+  tray = new Tray(path.join(__dirname, 'icon.png'));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '케어플로우 열기',
+      click: () => {
+        win.show();
+      },
+    },
+    {
+      label: '케어플로우 닫기',
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip('CareFlow');
+  tray.setContextMenu(contextMenu);
 
   ipcMain.handle("get-fcm", (event, key) => {
     const value = store.get("fcm_token"); // 데이터 읽기
