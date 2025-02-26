@@ -15,24 +15,22 @@ const signin = async (useInfo: SigninFormData) => {
   //   password: useInfo.password,
   // });
   // http://223.130.141.162:8000/api/users/staff-direct-login
-  const res = await axios.post(`http://223.130.141.162:8000/api/users/staff-direct-login`, {
+  const res = await axios.post(`${SEVER_URL}/users/staff-direct-login`, {
     loginId: useInfo.loginId,
     password: useInfo.password,
   });
-  console.log(res.data);
 
-  res.data.map(async(item: any) => {      
-    item.currentUser.role === "WARD" ?    
-      await window.authAPI.loginSuccessWard({
+  res.data.map(async (item: any) => {
+    item.currentUser.role === "WARD"
+      ? await window.authAPI.loginSuccessWard({
           accessToken: item.jwtResponse.accessToken,
           refreshToken: item.jwtResponse.refreshToken,
-      }) :
-      await window.authAPI.loginSuccessStaff({
-        accessToken: item.jwtResponse.accessToken,
-        refreshToken: item.jwtResponse.refreshToken,
-      });
-      
-  })
+        })
+      : await window.authAPI.loginSuccessStaff({
+          accessToken: item.jwtResponse.accessToken,
+          refreshToken: item.jwtResponse.refreshToken,
+        });
+  });
 
   // if (res.data.currentUser) {
   //   const userType: UserType = res.data.currentUser.role;
@@ -43,13 +41,13 @@ const signin = async (useInfo: SigninFormData) => {
   //         refreshToken: res.data.jwtResponse.refreshToken,
   //       });
   //       break;
-    //   case "WARD":
-    //     await window.authAPI.loginSuccessWard({
-    //       accessToken: res.data.jwtResponse.accessToken,
-    //       refreshToken: res.data.jwtResponse.refreshToken,
-    //     });
-    //     break;
-    // }
+  //   case "WARD":
+  //     await window.authAPI.loginSuccessWard({
+  //       accessToken: res.data.jwtResponse.accessToken,
+  //       refreshToken: res.data.jwtResponse.refreshToken,
+  //     });
+  //     break;
+  // }
   // }
   return res.data;
 };
@@ -64,9 +62,9 @@ export default function useSignin() {
     mutationFn: signin,
     onSuccess: async res => {
       queryClient.invalidateQueries({ queryKey: ["useGetWardPatientPending"] });
-      console.log("로그인 성공",res);
-      res.map(async(item: any) => {
-        console.log("item",item.currentUser);        
+      console.log("로그인 성공", res);
+      res.map(async (item: any) => {
+        console.log("item", item.currentUser);
         if (item.currentUser.role === "WARD") {
           setWardState({
             id: item.currentUser?.accountId,
@@ -85,13 +83,13 @@ export default function useSignin() {
             name: item.currentUser?.name,
             type: item.currentUser?.role,
           });
-        setUserState({
-          id: item.currentUser?.accountId,
-          name: item.currentUser?.name,
+          setUserState({
+            id: item.currentUser?.accountId,
+            name: item.currentUser?.name,
             type: item.currentUser?.role,
-          });  
+          });
         }
-      })
+      });
       //   });
       //   await window.electronStore.set("wardState", {
       //     id: res.currentUser?.accountId,

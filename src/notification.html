@@ -143,6 +143,10 @@
         document.getElementById("patientName").textContent = notification.patientName;
       };
 
+      document.getElementById("notification").addEventListener("click", () => {
+        window.api.notifyClick();
+      });
+
       getMessage();
 
       setTimeout(() => {

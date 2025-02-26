@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("api", {
   getNotification: async () => await ipcRenderer.invoke("get-notification"),
+  notifyClick: () => ipcRenderer.send("notification-clicked"),
   send: (channel, data) => ipcRenderer.send(channel, data),
   receive: (channel, callback) => ipcRenderer.on(channel, (event, ...args) => callback(...args)),
   onInitUserType: callback =>

@@ -1,5 +1,15 @@
 import { config } from "dotenv";
-import { app, BrowserWindow, ipcMain, screen, session, protocol, dialog } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  screen,
+  session,
+  protocol,
+  dialog,
+  Tray,
+  Menu,
+} from "electron";
 import { join } from "path";
 import { fileURLToPath, format } from "url";
 import Store from "electron-store";
@@ -19,6 +29,7 @@ const isDev = process.env.VITE_IS_DEV === "true";
 const store = new Store();
 
 let win; // 전역 변수로 선언
+let tray;
 
 // 자동 실행 활성화 함수
 const enableAutoLaunch = async () => {
@@ -144,13 +155,18 @@ async function createWindow() {
     }, 1000);
   });
 
-  // 에러 처리 추가
-  win.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
+  win.webContents.on("did-fail-load", async (event, errorCode, errorDescription) => {
     console.error("Window failed to load:", errorDescription);
     if (splashWindow && !splashWindow.isDestroyed()) {
       splashWindow.destroy();
     }
     win.show();
+  });
+
+  win.on("close", event => {
+    event.preventDefault();
+    console.log("접근");
+    win.hide();
   });
 
   console.log("Loading path:", path.join(__dirname, "webview.html"));
@@ -197,9 +213,12 @@ function displayNotificationBackground(notification) {
     notificationWindow.webContents.send("set-message", notification);
   });
 
-  notificationWindow.webContents.on("click", () => {
+  ipcMain.once("notification-clicked", () => {
     if (win) {
+      console.log("접근");
+      win.show();
       win.focus();
+      // notificationWindow.close();
     }
   });
 
@@ -238,9 +257,12 @@ function displayNotificationForground(notification) {
     notificationWindow.webContents.send("set-message", notification);
   });
 
-  notificationWindow.webContents.on("click", () => {
+  ipcMain.once("notification-clicked", () => {
     if (win) {
+      console.log("접근");
+      win.show();
       win.focus();
+      // notificationWindow.close();
     }
   });
 
@@ -253,6 +275,26 @@ function displayNotificationForground(notification) {
 app.whenReady().then(async () => {
   createWindow();
   enableAutoLaunch();
+
+  tray = new Tray(path.join(__dirname, "/assets/icon_16.ico"));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "케어플로우 열기",
+      click: () => {
+        win.show();
+      },
+    },
+    {
+      label: "케어플로우 종료",
+      click: () => {
+        // app.quit();
+        app.exit(0);
+      },
+    },
+  ]);
+
+  tray.setToolTip("CareFlow");
+  tray.setContextMenu(contextMenu);
 
   ipcMain.handle("get-fcm", (event, key) => {
     const value = store.get("fcm_token"); // 데이터 읽기
@@ -343,17 +385,19 @@ app.whenReady().then(async () => {
   });
 });
 
-// window-all-closed 이벤트 핸들러 수정
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+// 기본 종료 방지
+app.on("window-all-closed", event => {
+  event.preventDefault();
+  console.log("모든 창이 닫혔지만 앱은 종료되지 않음");
+  console.log(BrowserWindow.getAllWindows().length);
 });
 
 // before-quit 이벤트 수정
 app.on("before-quit", event => {
   event.preventDefault();
-  app.exit(0);
+  // app.exit(0);
+  console.log(BrowserWindow.getAllWindows().length);
+  console.log("앱이 종료됩니다.");
 });
 
 app.on("activate", () => {
